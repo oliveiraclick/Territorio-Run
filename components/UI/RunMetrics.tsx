@@ -74,59 +74,52 @@ export const RunMetrics: React.FC<RunMetricsProps> = ({
         ];
 
     return (
-        <div className="absolute bottom-24 left-0 right-0 z-10 px-4">
-            <div className="bg-white/95 backdrop-blur-xl rounded-2xl border border-gray-200 shadow-xl p-4">
-                {/* Status Header */}
-                <div className="flex items-center justify-center mb-4">
-                    <div className="flex items-center space-x-2 bg-green-50 px-4 py-1.5 rounded-full border border-green-200">
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-sm" />
-                        <span className="text-xs font-bold text-green-700 uppercase tracking-widest">
-                            Captura em Progresso
+        <div className="absolute top-20 left-4 right-4 z-10">
+            <div className="bg-white/95 backdrop-blur-xl rounded-full border border-gray-200 shadow-lg px-4 py-2">
+                <div className="flex items-center justify-between gap-3">
+                    {/* Status Indicator */}
+                    <div className="flex items-center space-x-1.5 flex-shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        <span className="text-[9px] font-bold text-green-700 uppercase tracking-wider hidden sm:inline">
+                            Ativo
                         </span>
                     </div>
-                </div>
 
-                {/* Metrics Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                    {metrics.map((metric, index) => (
-                        <div
-                            key={index}
-                            className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-3 border border-gray-200 hover:border-orange-300 transition-all shadow-sm"
-                        >
-                            <div className="flex items-center space-x-2 mb-2">
-                                <div className={`p-1.5 rounded-lg bg-gradient-to-br ${metric.color} bg-opacity-10`}>
+                    {/* Metrics - Horizontal Layout */}
+                    <div className="flex items-center gap-4 flex-1 justify-around">
+                        {metrics.map((metric, index) => (
+                            <div
+                                key={index}
+                                className="flex items-center gap-1.5 group"
+                                title={metric.label}
+                            >
+                                <div className={`p-1 rounded-lg bg-gradient-to-br ${metric.color} bg-opacity-10 group-hover:bg-opacity-20 transition-all`}>
                                     <div className="text-gray-700">
-                                        {metric.icon}
+                                        {React.cloneElement(metric.icon as React.ReactElement, { size: 14 })}
                                     </div>
                                 </div>
-                                <span className="text-[10px] text-gray-600 uppercase tracking-wider font-bold">
-                                    {metric.label}
-                                </span>
-                            </div>
-
-                            <div className="flex items-baseline space-x-1">
-                                <span className="text-2xl font-black text-gray-800 tabular-nums">
-                                    {metric.value}
-                                </span>
-                                {metric.unit && (
-                                    <span className="text-xs text-gray-500 font-bold">
-                                        {metric.unit}
+                                <div className="flex items-baseline gap-0.5">
+                                    <span className="text-sm font-black text-gray-800 tabular-nums">
+                                        {metric.value}
                                     </span>
-                                )}
+                                    {metric.unit && (
+                                        <span className="text-[9px] text-gray-500 font-bold">
+                                            {metric.unit}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Pace Info */}
-                {avgPace > 0 && avgPace < 100 && (
-                    <div className="mt-3 text-center">
-                        <div className="inline-flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-full border border-gray-200">
-                            <span className="text-[10px] text-gray-600 uppercase tracking-wider">Ritmo Médio:</span>
-                            <span className="text-sm font-bold text-gray-800 tabular-nums">{formatPace(avgPace)}/km</span>
-                        </div>
+                        ))}
                     </div>
-                )}
+
+                    {/* Pace Info - Compact */}
+                    {avgPace > 0 && avgPace < 100 && (
+                        <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full flex-shrink-0">
+                            <span className="text-[8px] text-gray-600 uppercase tracking-wider hidden sm:inline">Ritmo:</span>
+                            <span className="text-[10px] font-bold text-gray-800 tabular-nums">{formatPace(avgPace)}</span>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

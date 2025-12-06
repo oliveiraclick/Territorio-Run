@@ -6,7 +6,7 @@ import Controls from './components/UI/Controls';
 import ActivityFeed from './components/UI/ActivityFeed';
 import NamingModal from './components/UI/NamingModal';
 import AuthScreen from './components/UI/AuthScreen';
-import { ConfigPanel } from './components/ConfigPanel';
+
 import { StarBar } from './components/UI/StarBar';
 import { RunMetrics } from './components/UI/RunMetrics';
 import { TutorialScreen } from './components/UI/TutorialScreen';
@@ -18,7 +18,7 @@ import { generateTerritoryInfo, generateRivalName } from './services/geminiServi
 import { getOrCreateUser, fetchAllTerritories, createTerritory, updateTerritoryOwner } from './services/gameService';
 import { addStars, STAR_REWARDS, isNightTime, calculateLevel } from './utils/starSystem';
 import { calculatePolygonArea } from './utils/metricsCalculator';
-import { Watch, Menu, AlertTriangle, Satellite, User as UserIcon, Settings, HelpCircle } from 'lucide-react';
+import { Watch, Menu, AlertTriangle, Satellite, User as UserIcon, HelpCircle } from 'lucide-react';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -41,7 +41,7 @@ export default function App() {
   const [suggestedName, setSuggestedName] = useState("");
   const [suggestedDescription, setSuggestedDescription] = useState("");
   const [pendingStrategicValue, setPendingStrategicValue] = useState(0);
-  const [showConfigPanel, setShowConfigPanel] = useState(false);
+
   const [showTutorial, setShowTutorial] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [runStartTime, setRunStartTime] = useState(0);
@@ -262,9 +262,6 @@ export default function App() {
           <button onClick={() => setShowTutorial(true)} className="flex items-center space-x-2 px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-full border border-gray-200 hover:border-blue-500 transition-colors shadow-sm" title="Como Jogar">
             <HelpCircle size={14} className="text-blue-500" />
           </button>
-          <button onClick={() => setShowConfigPanel(true)} className="flex items-center space-x-2 px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-full border border-gray-200 hover:border-orange-500 transition-colors shadow-sm">
-            <Settings size={14} className="text-orange-500" />
-          </button>
           <button onClick={() => setShowProfile(true)} className="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-orange-500 to-blue-500 backdrop-blur-md rounded-full border-0 hover:shadow-lg transition-all shadow-sm" title="Perfil">
             <UserIcon size={14} className="text-white" />
             <span className="text-xs font-bold uppercase text-white">{currentUser.name}</span>
@@ -301,7 +298,7 @@ export default function App() {
 
       <NamingModal isOpen={showNamingModal} suggestedName={suggestedName} suggestedDescription={suggestedDescription} strategicValue={pendingStrategicValue} onConfirm={handleConfirmTerritory} onCancel={() => setShowNamingModal(false)} />
 
-      {showConfigPanel && <ConfigPanel onClose={() => setShowConfigPanel(false)} />}
+
       {showTutorial && <TutorialScreen onClose={() => setShowTutorial(false)} />}
       {showProfile && (
         <ProfileScreen

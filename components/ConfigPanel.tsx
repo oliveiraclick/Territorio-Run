@@ -86,314 +86,147 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ onClose }) => {
     const configStatus = config.getConfigStatus();
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(10px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10000,
-            padding: '20px',
-        }}>
-            <div style={{
-                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-                border: '2px solid #00ff88',
-                borderRadius: '16px',
-                padding: '30px',
-                maxWidth: '600px',
-                width: '100%',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                boxShadow: '0 0 40px rgba(0, 255, 136, 0.3)',
-            }}>
+        <div className="fixed inset-0 z-[10000] bg-black/50 backdrop-blur-lg flex items-center justify-center p-5">
+            <div className="bg-white max-w-2xl w-full rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '25px',
-                }}>
-                    <h2 style={{
-                        margin: 0,
-                        fontSize: '24px',
-                        fontWeight: 'bold',
-                        background: 'linear-gradient(90deg, #00ff88, #00d4ff)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                    }}>
-                        ⚙️ Configurações
-                    </h2>
+                <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-blue-500 p-6 flex items-center justify-between z-10 rounded-t-2xl">
+                    <div>
+                        <h2 className="text-2xl font-black text-white">
+                            ⚙️ Configurações
+                        </h2>
+                        <p className="text-white/80 text-sm mt-1">Configure suas integrações</p>
+                    </div>
                     <button
                         onClick={onClose}
-                        style={{
-                            background: 'transparent',
-                            border: '2px solid #ff4444',
-                            color: '#ff4444',
-                            borderRadius: '8px',
-                            padding: '8px 16px',
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            transition: 'all 0.3s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#ff4444';
-                            e.currentTarget.style.color = '#fff';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.color = '#ff4444';
-                        }}
+                        className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"
                     >
                         ✕
                     </button>
                 </div>
 
-                {/* Status Geral */}
-                <div style={{
-                    background: configStatus.overall === 'complete'
-                        ? 'rgba(0, 255, 136, 0.1)'
-                        : configStatus.overall === 'partial'
-                            ? 'rgba(255, 200, 0, 0.1)'
-                            : 'rgba(255, 68, 68, 0.1)',
-                    border: `2px solid ${configStatus.overall === 'complete'
-                            ? '#00ff88'
+                <div className="p-6 space-y-6 bg-gradient-to-br from-orange-50 via-blue-50 to-cyan-50">
+                    {/* Status Geral */}
+                    <div className={`p-4 rounded-xl border-2 ${configStatus.overall === 'complete'
+                            ? 'bg-green-50 border-green-400'
                             : configStatus.overall === 'partial'
-                                ? '#ffc800'
-                                : '#ff4444'
-                        }`,
-                    borderRadius: '12px',
-                    padding: '15px',
-                    marginBottom: '25px',
-                }}>
-                    <div style={{ fontSize: '14px', color: '#ccc', marginBottom: '8px' }}>
-                        Status da Configuração
-                    </div>
-                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>
-                        {configStatus.overall === 'complete' && '✅ Totalmente Configurado'}
-                        {configStatus.overall === 'partial' && '⚠️ Parcialmente Configurado'}
-                        {configStatus.overall === 'empty' && '❌ Não Configurado'}
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#aaa', marginTop: '8px' }}>
-                        Supabase: {configStatus.supabase === 'configured' ? '✅' : '❌'} |
-                        Gemini AI: {configStatus.gemini === 'configured' ? '✅' : '❌'}
-                    </div>
-                </div>
-
-                {/* Supabase Section */}
-                <div style={{ marginBottom: '25px' }}>
-                    <h3 style={{
-                        fontSize: '18px',
-                        color: '#00ff88',
-                        marginBottom: '15px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                    }}>
-                        🗄️ Supabase
-                    </h3>
-
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', color: '#ccc', marginBottom: '8px', fontSize: '14px' }}>
-                            URL do Projeto
-                        </label>
-                        <input
-                            type="text"
-                            value={supabaseUrl}
-                            onChange={(e) => { setSupabaseUrl(e.target.value); handleChange(); }}
-                            placeholder="https://seu-projeto.supabase.co"
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                background: 'rgba(0, 0, 0, 0.3)',
-                                border: '2px solid #333',
-                                borderRadius: '8px',
-                                color: '#fff',
-                                fontSize: '14px',
-                                outline: 'none',
-                                transition: 'border-color 0.3s',
-                            }}
-                            onFocus={(e) => e.currentTarget.style.borderColor = '#00ff88'}
-                            onBlur={(e) => e.currentTarget.style.borderColor = '#333'}
-                        />
+                                ? 'bg-yellow-50 border-yellow-400'
+                                : 'bg-red-50 border-red-400'
+                        }`}>
+                        <div className="text-sm text-gray-600 mb-2">
+                            Status da Configuração
+                        </div>
+                        <div className="text-lg font-bold text-gray-800">
+                            {configStatus.overall === 'complete' && '✅ Totalmente Configurado'}
+                            {configStatus.overall === 'partial' && '⚠️ Parcialmente Configurado'}
+                            {configStatus.overall === 'empty' && '❌ Não Configurado'}
+                        </div>
+                        <div className="text-xs text-gray-600 mt-2">
+                            Supabase: {configStatus.supabase === 'configured' ? '✅' : '❌'} |
+                            Gemini AI: {configStatus.gemini === 'configured' ? '✅' : '❌'}
+                        </div>
                     </div>
 
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', color: '#ccc', marginBottom: '8px', fontSize: '14px' }}>
-                            Chave Anônima (anon key)
-                        </label>
-                        <input
-                            type="password"
-                            value={supabaseKey}
-                            onChange={(e) => { setSupabaseKey(e.target.value); handleChange(); }}
-                            placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                background: 'rgba(0, 0, 0, 0.3)',
-                                border: '2px solid #333',
-                                borderRadius: '8px',
-                                color: '#fff',
-                                fontSize: '14px',
-                                outline: 'none',
-                                transition: 'border-color 0.3s',
-                            }}
-                            onFocus={(e) => e.currentTarget.style.borderColor = '#00ff88'}
-                            onBlur={(e) => e.currentTarget.style.borderColor = '#333'}
-                        />
+                    {/* Supabase Section */}
+                    <div>
+                        <h3 className="text-lg font-black text-blue-600 mb-4 flex items-center gap-2">
+                            🗄️ Supabase
+                        </h3>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    URL do Projeto
+                                </label>
+                                <input
+                                    type="text"
+                                    value={supabaseUrl}
+                                    onChange={(e) => { setSupabaseUrl(e.target.value); handleChange(); }}
+                                    placeholder="https://seu-projeto.supabase.co"
+                                    className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-gray-800 focus:border-blue-500 focus:outline-none transition-colors"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    Chave Anônima (anon key)
+                                </label>
+                                <input
+                                    type="password"
+                                    value={supabaseKey}
+                                    onChange={(e) => { setSupabaseKey(e.target.value); handleChange(); }}
+                                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                                    className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-gray-800 focus:border-blue-500 focus:outline-none transition-colors"
+                                />
+                            </div>
+
+                            <button
+                                onClick={handleTestConnection}
+                                disabled={!supabaseUrl || !supabaseKey || connectionStatus === 'testing'}
+                                className={`w-full py-3 rounded-xl font-bold transition-all ${connectionStatus === 'success'
+                                        ? 'bg-green-500 text-white'
+                                        : connectionStatus === 'error'
+                                            ? 'bg-red-500 text-white'
+                                            : 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:shadow-lg'
+                                    } ${(!supabaseUrl || !supabaseKey || connectionStatus === 'testing') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                            >
+                                {connectionStatus === 'testing' ? '🔄 Testando...' : '🔌 Testar Conexão'}
+                            </button>
+                        </div>
                     </div>
 
-                    <button
-                        onClick={handleTestConnection}
-                        disabled={!supabaseUrl || !supabaseKey || connectionStatus === 'testing'}
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            background: connectionStatus === 'success'
-                                ? '#00ff88'
-                                : connectionStatus === 'error'
-                                    ? '#ff4444'
-                                    : 'linear-gradient(90deg, #00d4ff, #00ff88)',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: '#000',
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            cursor: (!supabaseUrl || !supabaseKey || connectionStatus === 'testing') ? 'not-allowed' : 'pointer',
-                            opacity: (!supabaseUrl || !supabaseKey || connectionStatus === 'testing') ? 0.5 : 1,
-                            transition: 'all 0.3s',
-                        }}
-                    >
-                        {connectionStatus === 'testing' ? '🔄 Testando...' : '🔌 Testar Conexão'}
-                    </button>
-                </div>
+                    {/* Gemini AI Section */}
+                    <div>
+                        <h3 className="text-lg font-black text-orange-600 mb-4 flex items-center gap-2">
+                            🤖 Gemini AI
+                        </h3>
 
-                {/* Gemini AI Section */}
-                <div style={{ marginBottom: '25px' }}>
-                    <h3 style={{
-                        fontSize: '18px',
-                        color: '#00d4ff',
-                        marginBottom: '15px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                    }}>
-                        🤖 Gemini AI
-                    </h3>
-
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', color: '#ccc', marginBottom: '8px', fontSize: '14px' }}>
-                            API Key
-                        </label>
-                        <input
-                            type="password"
-                            value={geminiKey}
-                            onChange={(e) => { setGeminiKey(e.target.value); handleChange(); }}
-                            placeholder="AIzaSy..."
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                background: 'rgba(0, 0, 0, 0.3)',
-                                border: '2px solid #333',
-                                borderRadius: '8px',
-                                color: '#fff',
-                                fontSize: '14px',
-                                outline: 'none',
-                                transition: 'border-color 0.3s',
-                            }}
-                            onFocus={(e) => e.currentTarget.style.borderColor = '#00d4ff'}
-                            onBlur={(e) => e.currentTarget.style.borderColor = '#333'}
-                        />
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                                API Key
+                            </label>
+                            <input
+                                type="password"
+                                value={geminiKey}
+                                onChange={(e) => { setGeminiKey(e.target.value); handleChange(); }}
+                                placeholder="AIzaSy..."
+                                className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-gray-800 focus:border-orange-500 focus:outline-none transition-colors"
+                            />
+                        </div>
                     </div>
-                </div>
 
-                {/* Status Message */}
-                {statusMessage && (
-                    <div style={{
-                        background: 'rgba(0, 255, 136, 0.1)',
-                        border: '2px solid #00ff88',
-                        borderRadius: '8px',
-                        padding: '12px',
-                        marginBottom: '20px',
-                        color: '#fff',
-                        fontSize: '14px',
-                        textAlign: 'center',
-                    }}>
-                        {statusMessage}
+                    {/* Status Message */}
+                    {statusMessage && (
+                        <div className="bg-blue-50 border-2 border-blue-400 rounded-xl p-4 text-center text-gray-800 font-bold">
+                            {statusMessage}
+                        </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3">
+                        <button
+                            onClick={handleSave}
+                            disabled={!hasChanges}
+                            className={`flex-1 py-4 rounded-xl font-bold transition-all ${hasChanges
+                                    ? 'bg-gradient-to-r from-orange-500 to-blue-500 text-white hover:shadow-lg'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                        >
+                            💾 Salvar
+                        </button>
+
+                        <button
+                            onClick={handleClear}
+                            className="flex-1 py-4 rounded-xl font-bold bg-white border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                        >
+                            🗑️ Limpar
+                        </button>
                     </div>
-                )}
 
-                {/* Action Buttons */}
-                <div style={{
-                    display: 'flex',
-                    gap: '12px',
-                }}>
-                    <button
-                        onClick={handleSave}
-                        disabled={!hasChanges}
-                        style={{
-                            flex: 1,
-                            padding: '14px',
-                            background: hasChanges
-                                ? 'linear-gradient(90deg, #00ff88, #00d4ff)'
-                                : '#333',
-                            border: 'none',
-                            borderRadius: '8px',
-                            color: hasChanges ? '#000' : '#666',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            cursor: hasChanges ? 'pointer' : 'not-allowed',
-                            transition: 'all 0.3s',
-                        }}
-                    >
-                        💾 Salvar
-                    </button>
-
-                    <button
-                        onClick={handleClear}
-                        style={{
-                            flex: 1,
-                            padding: '14px',
-                            background: 'transparent',
-                            border: '2px solid #ff4444',
-                            borderRadius: '8px',
-                            color: '#ff4444',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#ff4444';
-                            e.currentTarget.style.color = '#fff';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.color = '#ff4444';
-                        }}
-                    >
-                        🗑️ Limpar
-                    </button>
-                </div>
-
-                {/* Info */}
-                <div style={{
-                    marginTop: '20px',
-                    padding: '15px',
-                    background: 'rgba(0, 212, 255, 0.05)',
-                    border: '1px solid rgba(0, 212, 255, 0.2)',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    color: '#aaa',
-                    lineHeight: '1.6',
-                }}>
-                    <strong style={{ color: '#00d4ff' }}>💡 Dica:</strong> As configurações são salvas localmente no navegador.
-                    Você também pode usar variáveis de ambiente (.env.local) como alternativa.
+                    {/* Info */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-gray-700">
+                        <strong className="text-blue-600">💡 Dica:</strong> As configurações são salvas localmente no navegador.
+                        Você também pode usar variáveis de ambiente (.env.local) como alternativa.
+                    </div>
                 </div>
             </div>
         </div>
