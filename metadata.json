@@ -1,0 +1,7 @@
+{
+  "name": "Territory Run: Conquista",
+  "description": "Um aplicativo de fitness gamificado onde seu trajeto de corrida conquista territórios no mundo real. Compita com outros para reivindicar e defender terras.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
