@@ -12,6 +12,7 @@ import { RunMetrics } from './components/UI/RunMetrics';
 import { TutorialScreen } from './components/UI/TutorialScreen';
 import { ProfileScreen } from './components/UI/ProfileScreen';
 import { SplashScreen } from './components/UI/SplashScreen';
+import { AdminDashboard } from './components/Admin/AdminDashboard';
 import { Coordinate, Territory, ActivityEvent, User } from './types';
 import { calculateTotalDistance, generateRandomColor } from './utils/geoUtils';
 import { generateTerritoryInfo, generateRivalName } from './services/geminiService';
@@ -44,6 +45,7 @@ export default function App() {
 
   const [showTutorial, setShowTutorial] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [runStartTime, setRunStartTime] = useState(0);
   const [userStars, setUserStars] = useState(0);
 
@@ -308,7 +310,15 @@ export default function App() {
           totalStars={userStars}
           onClose={() => setShowProfile(false)}
           onLogout={handleLogout}
+          onAdminAccess={() => {
+            setShowProfile(false);
+            setShowAdminDashboard(true);
+          }}
         />
+      )}
+
+      {showAdminDashboard && (
+        <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
       )}
 
       {processing && (

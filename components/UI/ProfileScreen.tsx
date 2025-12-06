@@ -1,7 +1,7 @@
 import React from 'react';
 import { User, Territory } from '../../types';
 import { calculateLevel } from '../../utils/starSystem';
-import { Star, MapPin, TrendingUp, Award, X, LogOut } from 'lucide-react';
+import { Star, MapPin, TrendingUp, Award, X, LogOut, Lock } from 'lucide-react';
 
 interface ProfileScreenProps {
     user: User;
@@ -10,6 +10,7 @@ interface ProfileScreenProps {
     totalStars: number;
     onClose: () => void;
     onLogout: () => void;
+    onAdminAccess: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
@@ -19,7 +20,21 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     totalStars,
     onClose,
     onLogout,
+    onAdminAccess,
 }) => {
+    const [showAdminLogin, setShowAdminLogin] = React.useState(false);
+    const [adminPassword, setAdminPassword] = React.useState('');
+
+    const handleAdminLogin = () => {
+        if (adminPassword === 'admin123') {
+            onAdminAccess();
+            setShowAdminLogin(false);
+            setAdminPassword('');
+        } else {
+            alert('Senha incorreta!');
+        }
+    };
+
     const myTerritories = territories.filter(t => t.ownerId === user.id);
     const totalTerritories = myTerritories.length;
     const territoriesLost = 0;
@@ -82,13 +97,42 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                             </div>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"
-                    >
-                        <X size={24} />
-                    </button>
+                    <div className="flex items-center space-x-2">
+                        <button
+                            onClick={() => setShowAdminLogin(!showAdminLogin)}
+                            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-all"
+                        >
+                            <Lock size={20} />
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
                 </div>
+
+                {/* Admin Login Modal (Inline) */}
+                {showAdminLogin && (
+                    <div className="bg-gray-100 p-4 border-b border-gray-200 animate-fade-in">
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="password"
+                                placeholder="Senha de Admin"
+                                value={adminPassword}
+                                onChange={(e) => setAdminPassword(e.target.value)}
+                                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
+                            />
+                            <button
+                                onClick={handleAdminLogin}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors"
+                            >
+                                Acessar
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 <div className="p-6 space-y-6 bg-gradient-to-br from-orange-50 via-blue-50 to-cyan-50">
 
@@ -213,8 +257,8 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                 <div
                                     key={index}
                                     className={`p-3 rounded-lg border ${achievement.achieved
-                                            ? 'bg-yellow-50 border-yellow-300 shadow-sm'
-                                            : 'bg-gray-50 border-gray-200 opacity-50'
+                                        ? 'bg-yellow-50 border-yellow-300 shadow-sm'
+                                        : 'bg-gray-50 border-gray-200 opacity-50'
                                         } text-center`}
                                 >
                                     <div className="text-2xl mb-1">{achievement.icon}</div>

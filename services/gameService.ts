@@ -29,12 +29,12 @@ export const getOrCreateUser = async (name: string, phone: string, password: str
     // Se achou o usuário pelo telefone, é um LOGIN
     if (!fetchError && existingUser) {
       console.log("Usuário encontrado. Verificando credenciais...");
-      
+
       // VERIFICAÇÃO DE SENHA
       if (existingUser.password) {
         // Se já tem senha, tem que bater
         if (existingUser.password !== password) {
-            throw new Error("Senha incorreta. Acesso negado.");
+          throw new Error("Senha incorreta. Acesso negado.");
         }
       } else {
         // LEGADO: Se é um usuário antigo sem senha, vamos definir a senha agora
@@ -44,79 +44,103 @@ export const getOrCreateUser = async (name: string, phone: string, password: str
 
       // Opcional: Atualizar o nome se o usuário mudou
       if (existingUser.name !== name) {
-          await supabase.from('profiles').update({ name }).eq('id', existingUser.id);
+        await supabase.from('profiles').update({ name }).eq('id', existingUser.id);
       }
 
       return {
         id: existingUser.id,
-        name: name, 
+        name: name,
         phone: existingUser.phone,
         score: existingUser.score,
-        territoriesHeld: 0, 
+        territoriesHeld: 0,
         joinedAt: new Date(existingUser.joined_at).getTime()
       };
     }
 
     // 2. CADASTRO: Se não achou, cria um novo com SENHA
     if (!existingUser) {
-        console.log("Novo usuário. Criando conta protegida...");
-        const { data: newUser, error: insertError } = await supabase
+      console.log("Novo usuário. Criando conta protegida...");
+      const { data: newUser, error: insertError } = await supabase
         .from('profiles')
         .insert([{ name, phone: cleanPhone, score: 0, password: password }])
         .select()
         .single();
-        
-        if (insertError) throw insertError;
 
-        return {
-            id: newUser.id,
-            name: newUser.name,
-            phone: newUser.phone,
-            score: newUser.score,
-            territoriesHeld: 0,
-            joinedAt: new Date(newUser.joined_at).getTime()
-        };
+      if (insertError) throw insertError;
+
+      return {
+        id: newUser.id,
+        name: newUser.name,
+        phone: newUser.phone,
+        score: newUser.score,
+        territoriesHeld: 0,
+        joinedAt: new Date(newUser.joined_at).getTime()
+      };
     }
-    
+
     throw fetchError || new Error("Connection failed");
 
   } catch (error: any) {
     // Propagate password error specifically
     if (error.message && error.message.includes("Senha")) {
-        throw error;
+      throw error;
     }
 
     console.warn("Supabase unavailable (Offline/NoConfig). Fallback to LocalStorage.", error);
-    
+
     // FALLBACK: Local Storage Logic (Simulado para Offline)
     let localUsers = getLocal('local_users') || [];
-    
+
     // Tenta achar localmente pelo telefone
     let user = localUsers.find((u: any) => u.phone === cleanPhone);
 
     if (!user) {
-        user = {
-            id: 'local_' + Date.now(),
-            name,
-            phone: cleanPhone,
-            password: password,
-            score: 0,
-            territoriesHeld: 0,
-            joinedAt: Date.now()
-        };
-        localUsers.push(user);
-        saveLocal('local_users', localUsers);
+      user = {
+        id: 'local_' + Date.now(),
+        name,
+        phone: cleanPhone,
+        password: password,
+        score: 0,
+        territoriesHeld: 0,
+        joinedAt: Date.now()
+      };
+      localUsers.push(user);
+      saveLocal('local_users', localUsers);
     } else {
-        // Check local password
-        if (user.password && user.password !== password) {
-             throw new Error("Senha incorreta (Modo Offline).");
-        }
-        // Atualiza dados
-        user.name = name;
-        if (!user.password) user.password = password;
-        saveLocal('local_users', localUsers);
+      // Check local password
+      if (user.password && user.password !== password) {
+        throw new Error("Senha incorreta (Modo Offline).");
+      }
+      // Atualiza dados
+      user.name = name;
+      if (!user.password) user.password = password;
+      saveLocal('local_users', localUsers);
     }
     return user;
+  }
+};
+
+export const fetchAllUsers = async (): Promise<User[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('score', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map((u: any) => ({
+      id: u.id,
+      name: u.name,
+      phone: u.phone,
+      score: u.score,
+      territoriesHeld: 0, // We'll need to calculate this separately if needed, or join tables
+      joinedAt: new Date(u.joined_at).getTime()
+    }));
+  } catch (error) {
+    console.warn("Supabase unavailable. Fetching local users.");
+    const localUsers = getLocal('local_users') || [];
+    return localUsers.sort((a: User, b: User) => b.score - a.score);
   }
 };
 
@@ -166,7 +190,7 @@ export const createTerritory = async (territory: Territory): Promise<boolean> =>
     return true;
   } catch (error) {
     console.warn("Supabase unavailable. Saving territory locally.");
-    
+
     // FALLBACK
     const current = getLocal('local_territories') || [];
     current.push(territory);
@@ -179,7 +203,7 @@ export const updateTerritoryOwner = async (territoryId: string, newOwnerId: stri
   try {
     const { error } = await supabase
       .from('territories')
-      .update({ 
+      .update({
         owner_id: newOwnerId,
         owner_name: newOwnerName,
         color: newColor,
@@ -190,17 +214,17 @@ export const updateTerritoryOwner = async (territoryId: string, newOwnerId: stri
     if (error) throw error;
     return true;
   } catch (error) {
-     console.warn("Supabase unavailable. Updating territory locally.");
-     
-     // FALLBACK
-     const current = getLocal('local_territories') || [];
-     const updated = current.map((t: Territory) => {
-         if (t.id === territoryId) {
-             return { ...t, ownerId: newOwnerId, ownerName: newOwnerName, color: newColor, conqueredAt: Date.now() };
-         }
-         return t;
-     });
-     saveLocal('local_territories', updated);
-     return true;
+    console.warn("Supabase unavailable. Updating territory locally.");
+
+    // FALLBACK
+    const current = getLocal('local_territories') || [];
+    const updated = current.map((t: Territory) => {
+      if (t.id === territoryId) {
+        return { ...t, ownerId: newOwnerId, ownerName: newOwnerName, color: newColor, conqueredAt: Date.now() };
+      }
+      return t;
+    });
+    saveLocal('local_territories', updated);
+    return true;
   }
 };
