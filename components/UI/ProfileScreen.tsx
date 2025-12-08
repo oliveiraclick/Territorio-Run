@@ -1,7 +1,8 @@
 import React from 'react';
 import { User, Territory } from '../../types';
 import { calculateLevel } from '../../utils/starSystem';
-import { Star, MapPin, TrendingUp, Award, X, LogOut, Lock } from 'lucide-react';
+import { getRequiredDistance } from '../../utils/territoryUtils';
+import { Star, MapPin, TrendingUp, Award, X, LogOut, Lock, Target, History, Users } from 'lucide-react';
 
 interface ProfileScreenProps {
     user: User;
@@ -11,6 +12,9 @@ interface ProfileScreenProps {
     onClose: () => void;
     onLogout: () => void;
     onAdminAccess: () => void;
+    onTerritoryClick?: (territoryId: string) => void;
+    onCreateTeam?: () => void;
+    onViewTeam?: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
@@ -21,6 +25,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     onClose,
     onLogout,
     onAdminAccess,
+    onTerritoryClick,
+    onCreateTeam,
+    onViewTeam,
 }) => {
     const [showAdminLogin, setShowAdminLogin] = React.useState(false);
     const [adminPassword, setAdminPassword] = React.useState('');
@@ -196,6 +203,44 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                         </div>
                     </section>
 
+                    {/* Seção de Equipe */}
+                    <section>
+                        <h2 className="text-xl font-black text-gray-800 mb-4">👥 Equipe</h2>
+                        {user.teamId ? (
+                            <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 rounded-xl shadow-md text-white">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <div className="text-sm opacity-90">Você faz parte de:</div>
+                                        <div className="text-xl font-black">{user.teamName}</div>
+                                        <div className="text-xs opacity-75 mt-1">
+                                            {user.role === 'owner' ? '👑 Dono da Equipe' : '🏃 Membro'}
+                                        </div>
+                                    </div>
+                                    <Users size={32} className="opacity-80" />
+                                </div>
+                                <button
+                                    onClick={onViewTeam}
+                                    className="w-full bg-white text-purple-600 font-bold py-2 rounded-lg hover:bg-gray-100 transition-all"
+                                >
+                                    Ver Painel da Equipe
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="bg-white p-4 rounded-xl shadow-md border-2 border-dashed border-gray-300">
+                                <div className="text-center py-4">
+                                    <Users size={48} className="mx-auto mb-3 text-gray-400" />
+                                    <p className="text-gray-600 mb-4">Você ainda não faz parte de uma equipe</p>
+                                    <button
+                                        onClick={onCreateTeam}
+                                        className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg transition-all"
+                                    >
+                                        Criar Minha Equipe
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </section>
+
                     {/* Territórios Recentes */}
                     <section>
                         <h2 className="text-xl font-black text-purple-600 mb-4">🗺️ Territórios Recentes</h2>
@@ -214,26 +259,52 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                     .map((territory) => (
                                         <div
                                             key={territory.id}
-                                            className="bg-white p-3 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all flex items-center justify-between"
+                                            onClick={() => onTerritoryClick?.(territory.id)}
+                                            className="bg-white p-3 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer"
                                         >
-                                            <div className="flex items-center space-x-3">
-                                                <div
-                                                    className="w-3 h-3 rounded-full"
-                                                    style={{ backgroundColor: territory.color }}
-                                                />
-                                                <div>
-                                                    <div className="font-bold text-gray-800 text-sm">{territory.name}</div>
-                                                    <div className="text-xs text-gray-500">
-                                                        {new Date(territory.conqueredAt).toLocaleDateString('pt-BR')} às{' '}
-                                                        {new Date(territory.conqueredAt).toLocaleTimeString('pt-BR', {
-                                                            hour: '2-digit',
-                                                            minute: '2-digit'
-                                                        })}
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center space-x-3">
+                                                    <div
+                                                        className="w-3 h-3 rounded-full"
+                                                        style={{ backgroundColor: territory.color }}
+                                                    />
+                                                    <div>
+                                                        <div className="font-bold text-gray-800 text-sm">{territory.name}</div>
+                                                        <div className="text-xs text-gray-500">
+                                                            {new Date(territory.conqueredAt).toLocaleDateString('pt-BR')} às{' '}
+                                                            {new Date(territory.conqueredAt).toLocaleTimeString('pt-BR', {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <div className="text-right">
+                                                    <div className="text-sm font-bold text-orange-500">{territory.value} pts</div>
+                                                </div>
                                             </div>
-                                            <div className="text-right">
-                                                <div className="text-sm font-bold text-orange-500">{territory.value} pts</div>
+
+                                            {/* Informações de Conquista */}
+                                            <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+                                                <div className="flex items-center space-x-3">
+                                                    {territory.conquestCount && territory.conquestCount > 0 && (
+                                                        <div className="flex items-center space-x-1">
+                                                            <Target size={12} className="text-red-500" />
+                                                            <span>Conquistado {territory.conquestCount}x</span>
+                                                        </div>
+                                                    )}
+                                                    {territory.previousOwnerName && (
+                                                        <div className="flex items-center space-x-1">
+                                                            <History size={12} className="text-blue-500" />
+                                                            <span>De: {territory.previousOwnerName}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {territory.originalDistance && (
+                                                    <div className="text-xs font-semibold text-gray-600">
+                                                        {territory.originalDistance.toFixed(2)} km
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))}

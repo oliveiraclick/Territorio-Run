@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { Zap, MapPin, Trophy, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Zap, MapPin, Trophy, TrendingUp, Users } from 'lucide-react';
+import { Team } from '../../types';
+import { getTeamBySlug } from '../../services/teamService';
 
 interface AuthScreenProps {
-  onRegister: (name: string, phone: string, password: string) => Promise<void>;
+  onRegister: (name: string, phone: string, password: string, teamId?: string, teamName?: string) => Promise<void>;
 }
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
@@ -10,6 +12,24 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [inviteTeam, setInviteTeam] = useState<Team | null>(null);
+
+  // Detectar slug na URL
+  useEffect(() => {
+    const detectTeamSlug = async () => {
+      const path = window.location.pathname;
+      const slug = path.substring(1); // Remove leading '/'
+
+      if (slug && slug !== '') {
+        const team = await getTeamBySlug(slug);
+        if (team) {
+          setInviteTeam(team);
+        }
+      }
+    };
+
+    detectTeamSlug();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +40,13 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
 
     setLoading(true);
     try {
-      await onRegister(name.trim(), phone.trim(), password.trim());
+      await onRegister(
+        name.trim(),
+        phone.trim(),
+        password.trim(),
+        inviteTeam?.id,
+        inviteTeam?.name
+      );
     } catch (error) {
       console.error('Erro no registro:', error);
     } finally {
@@ -102,11 +128,25 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
 
           {/* Welcome Text */}
           <div className="mb-8">
+            {inviteTeam ? (
+              <div className="bg-gradient-to-r from-orange-500 to-blue-500 p-4 rounded-xl mb-4">
+                <div className="flex items-center space-x-3 mb-2">
+                  <Users className="text-white" size={24} />
+                  <h3 className="text-lg font-black text-white">Convite de Equipe!</h3>
+                </div>
+                <p className="text-white/90 text-sm">
+                  Você está se cadastrando na equipe <strong>{inviteTeam.name}</strong>
+                </p>
+              </div>
+            ) : null}
             <h2 className="text-3xl font-black text-gray-800 mb-2">
               Bem-vindo! 👋
             </h2>
             <p className="text-gray-600">
-              Entre ou crie sua conta para começar a conquistar
+              {inviteTeam
+                ? `Complete seu cadastro para entrar na equipe ${inviteTeam.name}`
+                : 'Entre ou crie sua conta para começar a conquistar'
+              }
             </p>
           </div>
 

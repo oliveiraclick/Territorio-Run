@@ -5,6 +5,8 @@ export interface Coordinate {
   timestamp: number;
 }
 
+export type ActivityMode = 'running' | 'cycling';
+
 export interface Territory {
   id: string;
   name: string;
@@ -15,6 +17,16 @@ export interface Territory {
   value: number; // Points value
   conqueredAt: number;
   description?: string; // AI Generated description
+  conquestCount?: number; // Número de vezes que foi conquistado
+  previousOwnerId?: string; // ID do dono anterior
+  previousOwnerName?: string; // Nome do dono anterior
+  originalDistance?: number; // Distância original do percurso em km
+  challengeId?: string; // ID do desafio (se for território de desafio)
+  visibility: 'public' | 'team'; // Visibilidade do território
+  teamId?: string; // ID da equipe (se visibility = 'team')
+  activityMode?: ActivityMode; // Modalidade usada (corrida ou bike)
+  avgSpeed?: number; // Velocidade média em km/h
+  maxSpeed?: number; // Velocidade máxima em km/h
 }
 
 export interface UserStats {
@@ -34,11 +46,14 @@ export interface User {
   territoriesHeld: number;
   joinedAt: number;
   stats?: UserStats;
+  teamId?: string; // ID da equipe
+  teamName?: string; // Nome da equipe
+  role?: 'owner' | 'member' | 'individual'; // Papel do usuário
 }
 
 export interface ActivityEvent {
   id: string;
-  type: 'conquer' | 'lost' | 'defend' | 'levelup' | 'stars';
+  type: 'conquer' | 'lost' | 'defend' | 'levelup' | 'stars' | 'fraud';
   message: string;
   timestamp: number;
   territoryId?: string; // Optional link to a specific territory
@@ -67,4 +82,38 @@ export interface StarGain {
   reason: string;
   leveledUp?: boolean;
   newLevel?: number;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  slug: string; // URL-friendly: "equipe-nike"
+  ownerId: string;
+  ownerName: string;
+  createdAt: number;
+  memberCount: number;
+}
+
+export interface Challenge {
+  id: string;
+  name: string;
+  description?: string;
+  teamId: string;
+  territoryId: string;
+  points: number; // Pontos que vale o desafio
+  startDate: number;
+  endDate: number;
+  isActive: boolean;
+  createdAt: number;
+  createdBy: string;
+}
+
+export interface TeamMember {
+  userId: string;
+  userName: string;
+  joinedAt: number;
+  totalDistance: number;
+  totalTerritories: number;
+  totalStars: number;
+  challengesCompleted: number;
 }
