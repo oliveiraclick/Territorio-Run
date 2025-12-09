@@ -1,87 +1,93 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#39ff14" />
-    
-    <!-- PWA Settings -->
-    <link rel="manifest" href="./manifest.json" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Territory" />
-    
-    <title>Territory Run: Conquista</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'neon-green': '#39ff14',
-              'neon-red': '#ff073a',
-              'dark-bg': '#0a0a0a',
-              'panel-bg': 'rgba(20, 20, 20, 0.9)'
-            }
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#39ff14" />
+
+  <!-- PWA Settings -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Territory" />
+
+  <title>Territory Run: Conquista</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'neon-green': '#39ff14',
+            'neon-red': '#ff073a',
+            'dark-bg': '#0a0a0a',
+            'panel-bg': 'rgba(20, 20, 20, 0.9)'
           }
         }
       }
-    </script>
-    <style>
-      /* Custom scrollbar for cyberpunk feel */
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1a1a1a;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #333;
-        border-radius: 3px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #39ff14;
-      }
-      .leaflet-container {
-        background: #1a1a1a;
-      }
-      /* Prevent text selection for app-like feel */
-      body {
-        -webkit-user-select: none;
-        user-select: none;
-        background-color: #0a0a0a;
-      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar for cyberpunk feel */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
 
-      /* Cyberpunk Leaflet Popup Overrides */
-      .leaflet-popup-content-wrapper {
-        background-color: rgba(10, 10, 10, 0.95) !important;
-        border: 1px solid #39ff14;
-        border-radius: 8px !important;
-        color: #fff !important;
-        box-shadow: 0 0 15px rgba(57, 255, 20, 0.2) !important;
-        backdrop-filter: blur(5px);
-      }
-      .leaflet-popup-tip {
-        background-color: rgba(10, 10, 10, 0.95) !important;
-        border: 1px solid #39ff14;
-      }
-      .leaflet-popup-content {
-        margin: 10px !important;
-        font-family: monospace;
-      }
-      .leaflet-container a.leaflet-popup-close-button {
-        color: #666 !important;
-      }
-      .leaflet-container a.leaflet-popup-close-button:hover {
-        color: #ff073a !important;
-      }
-    </style>
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #39ff14;
+    }
+
+    .leaflet-container {
+      background: #1a1a1a;
+    }
+
+    /* Prevent text selection for app-like feel */
+    body {
+      -webkit-user-select: none;
+      user-select: none;
+      background-color: #0a0a0a;
+    }
+
+    /* Cyberpunk Leaflet Popup Overrides */
+    .leaflet-popup-content-wrapper {
+      background-color: rgba(10, 10, 10, 0.95) !important;
+      border: 1px solid #39ff14;
+      border-radius: 8px !important;
+      color: #fff !important;
+      box-shadow: 0 0 15px rgba(57, 255, 20, 0.2) !important;
+      backdrop-filter: blur(5px);
+    }
+
+    .leaflet-popup-tip {
+      background-color: rgba(10, 10, 10, 0.95) !important;
+      border: 1px solid #39ff14;
+    }
+
+    .leaflet-popup-content {
+      margin: 10px !important;
+      font-family: monospace;
+    }
+
+    .leaflet-container a.leaflet-popup-close-button {
+      color: #666 !important;
+    }
+
+    .leaflet-container a.leaflet-popup-close-button:hover {
+      color: #ff073a !important;
+    }
+  </style>
   <script type="importmap">
 {
   "imports": {
@@ -97,29 +103,25 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-dark-bg text-white overflow-hidden">
-    <div id="root">
-      <!-- Native Loading Screen (Visible before React loads) -->
-      <div id="loading-screen" style="height: 100vh; width: 100vw; background-color: #0a0a0a; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; color: #39ff14; position: fixed; top: 0; left: 0; z-index: 9999;">
-        <div style="width: 50px; height: 50px; border: 4px solid #1a1a1a; border-top: 4px solid #39ff14; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 24px; box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);"></div>
-        <div style="font-weight: 900; letter-spacing: 4px; font-size: 14px; text-transform: uppercase;">REINICIANDO SISTEMA v6.0</div>
-        <div style="font-size: 10px; color: #666; margin-top: 8px;">Atualizando Protocolos...</div>
-        <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-      </div>
-    </div>
 
-    <!-- GLOBAL ERROR TRAP: Catch initialization crashes -->
-    <script>
-      window.onerror = function(message, source, lineno, colno, error) {
-        const root = document.getElementById('root');
-        if (root) {
-          // Remove spinner if error occurs
-          const spinner = document.getElementById('loading-screen');
-          if(spinner) spinner.remove();
+<body class="bg-dark-bg text-white overflow-hidden">
+  <div id="root">
+    <!-- Native Loading Screen (Visible before React loads) -->
 
-          root.innerHTML = `
+  </div>
+
+  <!-- GLOBAL ERROR TRAP: Catch initialization crashes -->
+  <script>
+    window.onerror = function (message, source, lineno, colno, error) {
+      const root = document.getElementById('root');
+      if (root) {
+        // Remove spinner if error occurs
+        const spinner = document.getElementById('loading-screen');
+        if (spinner) spinner.remove();
+
+        root.innerHTML = `
             <div style="height: 100vh; width: 100vw; background: #0a0a0a; color: #ff073a; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; font-family: monospace; text-align: center;">
               <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 20px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
               <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Falha de Inicialização</h1>
@@ -131,26 +133,27 @@
               <button onclick="window.location.reload()" style="margin-top: 30px; background: #39ff14; color: #000; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase;">Reiniciar Sistema</button>
             </div>
           `;
-        }
-      };
-    </script>
-
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(registration => {
-              console.log('SW registered: ', registration);
-            })
-            .catch(registrationError => {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
       }
-    </script>
-    
-    <!-- CRITICAL: Entry Point for React Application -->
-    <script type="module" src="./index.tsx"></script>
+    };
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => {
+            console.log('SW registered: ', registration);
+          })
+          .catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+  </script>
+
+  <!-- CRITICAL: Entry Point for React Application -->
+
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

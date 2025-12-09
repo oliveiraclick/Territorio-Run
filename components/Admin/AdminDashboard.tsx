@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Map, Activity, Search, X, ShieldCheck, Trophy, Calendar, MapPin } from 'lucide-react';
+import { Users, Map, Activity, Search, X, ShieldCheck, Trophy, Calendar, MapPin, Trash2, AlertTriangle, Swords } from 'lucide-react';
 import { User, Territory } from '../../types';
-import { fetchAllUsers, fetchAllTerritories } from '../../services/gameService';
+import { fetchAllUsers, fetchAllTerritories, deleteTerritory } from '../../services/gameService';
+// import { getAllBattles, forceEndBattle, deleteBattle } from '../../services/battleService'; // TODO: Implement if needed
 
 interface AdminDashboardProps {
     onClose: () => void;
@@ -12,6 +13,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     const [territories, setTerritories] = useState<Territory[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeTab, setActiveTab] = useState<'overview' | 'territories' | 'battles' | 'map'>('overview');
 
     useEffect(() => {
         const loadData = async () => {
@@ -31,12 +33,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         loadData();
     }, []);
 
+    // Handler for Deleting Territory
+    const handleDeleteTerritory = async (id: string, name: string) => {
+        if (window.confirm(`Tem certeza que deseja excluir o território "${name}"? Esta ação é irreversível.`)) {
+            await deleteTerritory(id);
+            setTerritories(prev => prev.filter(t => t.id !== id));
+        }
+    };
+
     // Calculate Stats
     const totalUsers = users.length;
     const totalTerritories = territories.length;
-
-    // Estimate total KM based on score (approx 10 points per km for example)
-    // This is an ESTIMATE since we don't store raw distance in user profile yet
     const estimatedTotalKm = Math.floor(users.reduce((acc, user) => acc + user.score, 0) / 10);
 
     // Calculate Top 10 by Stars
@@ -62,14 +69,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10);
 
-    // Mock Cities/States (Since we don't have reverse geocoding on backend yet)
-    // Assuming local usage for now
-    const activeCities = 1;
-    const activeStates = 1;
-
+    // Filtered Lists
     const filteredUsers = users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.phone.includes(searchTerm)
+    );
+
+    const filteredTerritories = territories.filter(t =>
+        t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const formatDate = (timestamp: number) => {
@@ -79,6 +87,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
             year: '2-digit'
         });
     };
+
+    if (loading) {
+        return <div className="fixed inset-0 z-[9999] bg-white flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>;
+    }
 
     return (
         <div className="fixed inset-0 z-[9999] bg-gray-100 flex flex-col overflow-hidden">
@@ -95,214 +109,202 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 </div>
                 <button
                     onClick={onClose}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
                 >
-                    <X size={24} className="text-gray-500" />
+                    <X size={24} />
                 </button>
             </div>
 
+            {/* Tabs */}
+            <div className="flex px-6 space-x-4 border-b border-gray-200 bg-white">
+                <button
+                    onClick={() => setActiveTab('overview')}
+                    className={`py-4 text-sm font-bold border-b-2 transition-all ${activeTab === 'overview' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    Visão Geral
+                </button>
+                <button
+                    onClick={() => setActiveTab('territories')}
+                    className={`py-4 text-sm font-bold border-b-2 transition-all ${activeTab === 'territories' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                >
+                    Territórios
+                </button>
+                {/* <button onClick={() => setActiveTab('battles')} ... /> */}
+            </div>
+
+            {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
-                <div className="max-w-7xl mx-auto space-y-8">
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                        {/* Total Users */}
-                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between h-32">
-                            <div className="flex justify-between items-start">
-                                <div className="bg-blue-50 p-2 rounded-lg">
-                                    <Users size={20} className="text-blue-500" />
+                {activeTab === 'overview' && (
+                    <div className="max-w-7xl mx-auto space-y-8">
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-gray-500 font-bold text-sm uppercase">Atletas</h3>
+                                    <Users className="text-blue-500" size={20} />
                                 </div>
-                                <span className="text-xs font-bold text-gray-400 uppercase">Usuários</span>
+                                <div className="text-3xl font-black text-gray-800">{totalUsers}</div>
+                                <div className="text-xs text-green-500 mt-1 font-bold">+12% este mês</div>
                             </div>
-                            <h2 className="text-3xl font-black text-gray-800">{loading ? '...' : totalUsers}</h2>
+
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-gray-500 font-bold text-sm uppercase">Territórios</h3>
+                                    <Map className="text-purple-500" size={20} />
+                                </div>
+                                <div className="text-3xl font-black text-gray-800">{totalTerritories}</div>
+                                <div className="text-xs text-green-500 mt-1 font-bold">+5 hoje</div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-gray-500 font-bold text-sm uppercase">Cidades</h3>
+                                    <MapPin className="text-red-500" size={20} />
+                                </div>
+                                <div className="text-3xl font-black text-gray-800">1</div>
+                                <div className="text-xs text-gray-400 mt-1 font-bold">Expansão em breve</div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-gray-500 font-bold text-sm uppercase">Total Percorrido</h3>
+                                    <Activity className="text-orange-500" size={20} />
+                                </div>
+                                <div className="text-3xl font-black text-gray-800">{estimatedTotalKm} <span className="text-sm text-gray-400">km</span></div>
+                                <div className="text-xs text-green-500 mt-1 font-bold">Estimado</div>
+                            </div>
                         </div>
 
-                        {/* Total Territories */}
-                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between h-32">
-                            <div className="flex justify-between items-start">
-                                <div className="bg-orange-50 p-2 rounded-lg">
-                                    <Map size={20} className="text-orange-500" />
+                        {/* Top Lists */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Top Stars */}
+                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                                    <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                        <Trophy size={20} className="text-yellow-500" />
+                                        Ranking Geral (Estrelas)
+                                    </h2>
                                 </div>
-                                <span className="text-xs font-bold text-gray-400 uppercase">Territórios</span>
-                            </div>
-                            <h2 className="text-3xl font-black text-gray-800">{loading ? '...' : totalTerritories}</h2>
-                        </div>
-
-                        {/* Total Km */}
-                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between h-32">
-                            <div className="flex justify-between items-start">
-                                <div className="bg-green-50 p-2 rounded-lg">
-                                    <Activity size={20} className="text-green-500" />
-                                </div>
-                                <span className="text-xs font-bold text-gray-400 uppercase">Km Corridos</span>
-                            </div>
-                            <h2 className="text-3xl font-black text-gray-800">{loading ? '...' : estimatedTotalKm.toLocaleString()}</h2>
-                        </div>
-
-                        {/* Cities */}
-                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between h-32">
-                            <div className="flex justify-between items-start">
-                                <div className="bg-purple-50 p-2 rounded-lg">
-                                    <MapPin size={20} className="text-purple-500" />
-                                </div>
-                                <span className="text-xs font-bold text-gray-400 uppercase">Cidades</span>
-                            </div>
-                            <h2 className="text-3xl font-black text-gray-800">{loading ? '...' : activeCities}</h2>
-                        </div>
-
-                        {/* States */}
-                        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between h-32">
-                            <div className="flex justify-between items-start">
-                                <div className="bg-yellow-50 p-2 rounded-lg">
-                                    <MapPin size={20} className="text-yellow-500" />
-                                </div>
-                                <span className="text-xs font-bold text-gray-400 uppercase">Estados</span>
-                            </div>
-                            <h2 className="text-3xl font-black text-gray-800">{loading ? '...' : activeStates}</h2>
-                        </div>
-                    </div>
-
-                    {/* Rankings Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Top 10 Stars */}
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                                <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                    <Trophy size={20} className="text-yellow-500" />
-                                    Top 10 - Estrelas
-                                </h2>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">#</th>
-                                            <th className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Usuário</th>
-                                            <th className="px-4 py-2 text-xs font-bold text-gray-500 uppercase text-right">Estrelas</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {topStars.map((user, index) => (
-                                            <tr key={user.id} className="hover:bg-gray-50">
-                                                <td className="px-4 py-3 text-sm font-bold text-gray-400">{index + 1}</td>
-                                                <td className="px-4 py-3 text-sm font-medium text-gray-800">{user.name}</td>
-                                                <td className="px-4 py-3 text-sm font-bold text-yellow-600 text-right">{user.score.toLocaleString()}</td>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-gray-50 border-b border-gray-200">
+                                            <tr>
+                                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Pos</th>
+                                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Atleta</th>
+                                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-right">Estrelas</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {topStars.map((user, index) => (
+                                                <tr key={user.id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 font-mono text-sm text-gray-500">#{index + 1}</td>
+                                                    <td className="px-6 py-4 font-bold text-gray-800">{user.name}</td>
+                                                    <td className="px-6 py-4 text-right font-mono font-bold text-yellow-600">{user.score} ★</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Top 10 Territories */}
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                                <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                    <Map size={20} className="text-orange-500" />
-                                    Top 10 - Territórios
-                                </h2>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">#</th>
-                                            <th className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">Usuário</th>
-                                            <th className="px-4 py-2 text-xs font-bold text-gray-500 uppercase text-right">Territórios</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {topTerritories.map((item, index) => (
-                                            <tr key={item.userId} className="hover:bg-gray-50">
-                                                <td className="px-4 py-3 text-sm font-bold text-gray-400">{index + 1}</td>
-                                                <td className="px-4 py-3 text-sm font-medium text-gray-800">{item.name}</td>
-                                                <td className="px-4 py-3 text-sm font-bold text-orange-600 text-right">{item.count}</td>
+                            {/* Top Territories */}
+                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                                    <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                        <Map size={20} className="text-purple-500" />
+                                        Maiores Conquistadores
+                                    </h2>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-gray-50 border-b border-gray-200">
+                                            <tr>
+                                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Pos</th>
+                                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Atleta</th>
+                                                <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-right">Territórios</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {topTerritories.map((item, index) => (
+                                                <tr key={item.userId} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 font-mono text-sm text-gray-500">#{index + 1}</td>
+                                                    <td className="px-6 py-4 font-bold text-gray-800">{item.name}</td>
+                                                    <td className="px-6 py-4 text-right font-mono font-bold text-purple-600">{item.count} 🚩</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
+                )}
 
-                    {/* Users Table Section */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                <Users size={20} className="text-gray-500" />
-                                Todos os Usuários
-                            </h2>
-
-                            {/* Search Bar */}
-                            <div className="relative">
-                                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Buscar por nome ou telefone..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full md:w-64 text-sm"
-                                />
+                {activeTab === 'territories' && (
+                    <div className="max-w-7xl mx-auto">
+                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div className="p-6 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                    <Map size={20} className="text-gray-500" />
+                                    Gerenciar Territórios
+                                </h2>
+                                <div className="relative">
+                                    <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar território ou dono..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full md:w-64 text-sm"
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-gray-50 border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Usuário</th>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Telefone</th>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Pontuação</th>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Data Cadastro</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {loading ? (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="bg-gray-50 border-b border-gray-200">
                                         <tr>
-                                            <td colSpan={4} className="px-6 py-8 text-center text-gray-500">Carregando dados...</td>
+                                            <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Nome</th>
+                                            <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Dono Atual</th>
+                                            <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Data Conquista</th>
+                                            <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Ações</th>
                                         </tr>
-                                    ) : filteredUsers.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="px-6 py-8 text-center text-gray-500">Nenhum usuário encontrado.</td>
-                                        </tr>
-                                    ) : (
-                                        filteredUsers.map((user) => (
-                                            <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {filteredTerritories.map((t) => (
+                                            <tr key={t.id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center">
-                                                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold text-xs mr-3">
-                                                            {user.name.charAt(0).toUpperCase()}
-                                                        </div>
-                                                        <span className="font-medium text-gray-900">{user.name}</span>
-                                                    </div>
+                                                    <div className="font-bold text-gray-800">{t.name}</div>
+                                                    {t.description && <div className="text-xs text-gray-400 max-w-[200px] truncate">{t.description}</div>}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                                                    {user.phone}
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                    {t.ownerName || <span className="text-gray-400 italic">Sem dono</span>}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {formatDate(t.conqueredAt)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                        <Trophy size={12} className="mr-1" />
-                                                        {user.score.toLocaleString()}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">
-                                                    <div className="flex items-center justify-end gap-1">
-                                                        <Calendar size={14} />
-                                                        {formatDate(user.joinedAt)}
-                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteTerritory(t.id, t.name)}
+                                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                                                        title="Excluir Território"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
                                                 </td>
                                             </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Footer / Pagination (Simplified) */}
-                        <div className="bg-gray-50 px-6 py-3 border-t border-gray-200 text-xs text-gray-500 flex justify-between items-center">
-                            <span>Mostrando {filteredUsers.length} de {totalUsers} usuários</span>
+                                        ))}
+                                        {filteredTerritories.length === 0 && (
+                                            <tr>
+                                                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">Nenhum território encontrado.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

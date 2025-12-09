@@ -19,6 +19,7 @@ import { TutorialScreen } from './components/UI/TutorialScreen';
 import { ProfileScreen } from './components/UI/ProfileScreen';
 import { SplashScreen } from './components/UI/SplashScreen';
 import { AdminDashboard } from './components/Admin/AdminDashboard';
+import { AppShell } from './components/Layout/AppShell';
 import { Coordinate, Territory, ActivityEvent, User, Team, Challenge, ActivityMode } from './types';
 import { calculateTotalDistance, generateRandomColor, isValidGPSAccuracy, shouldAddPoint } from './utils/geoUtils';
 import { findOverlappingTerritories, validateConquest, calculateConquestBonus, getRequiredDistance } from './utils/territoryUtils';
@@ -26,8 +27,9 @@ import { generateTerritoryInfo, generateRivalName } from './services/geminiServi
 import { getOrCreateUser, fetchAllTerritories, createTerritory, updateTerritoryOwner } from './services/gameService';
 import { addStars, STAR_REWARDS, isNightTime, calculateLevel } from './utils/starSystem';
 import { calculatePolygonArea } from './utils/metricsCalculator';
-import { createTeam, joinTeam } from './services/teamService';
+import { createTeam, joinTeam, addPointsToSquad } from './services/teamService';
 import { createChallenge } from './services/challengeService';
+import { updateBattleScore } from './services/battleService';
 import { calculateAverageSpeed, calculateMaxSpeed, validateActivity, calculateAdjustedPoints } from './utils/activityUtils';
 import { Watch, Menu, AlertTriangle, Satellite, User as UserIcon, HelpCircle } from 'lucide-react';
 
@@ -83,14 +85,7 @@ export default function App() {
   const simulationInterval = useRef<any>(null);
   const watchId = useRef<number | null>(null);
 
-  useEffect(() => {
-    // Remove loading screen immediately after React loads
-    const loader = document.getElementById('loading-screen');
-    if (loader) {
-      loader.style.opacity = '0';
-      setTimeout(() => loader.remove(), 500);
-    }
-  }, []);
+
 
   useEffect(() => {
     const savedUserStr = localStorage.getItem('territory_user_session');
@@ -259,7 +254,18 @@ export default function App() {
     setIsRunning(false);
     if (simulationInterval.current) clearInterval(simulationInterval.current);
     setIsSimulating(false);
-    if (currentPath.length < 5) { alert("Trajeto muito curto."); return; }
+    if (currentPath.length < 5) { alert("Trajeto muito curto, continue se movendo."); return; }
+
+    // Validar distância mínima
+    if (distance < 0.1) {
+      alert("Distância insuficiente para conquistar um território (mínimo 100m).");
+      setIsRunning(false);
+      if (simulationInterval.current) clearInterval(simulationInterval.current);
+      setIsSimulating(false);
+      setDistance(0);
+      setCurrentPath([]);
+      return;
+    }
 
     setProcessing(true);
 
@@ -322,9 +328,18 @@ export default function App() {
         setTerritories(prev => prev.map(t => t.id === targetTerritory.id ? updatedTerritory : t));
         await updateTerritoryOwner(targetTerritory.id, currentUser?.id || '', currentUser?.name || '', targetTerritory.color);
 
+        setTerritories(prev => prev.map(t => t.id === targetTerritory.id ? updatedTerritory : t));
+        await updateTerritoryOwner(targetTerritory.id, currentUser?.id || '', currentUser?.name || '', targetTerritory.color);
+
         // Adicionar estrelas
         const newStars = userStars + conquestBonus;
         setUserStars(newStars);
+
+        // Atualizar pontuação da guerra (se houver)
+        if (currentUser?.teamId) {
+          await updateBattleScore(currentUser.teamId, conquestBonus); // Guerra Externa
+          await addPointsToSquad(currentUser.teamId, currentUser.id, conquestBonus); // Guerra Interna
+        }
 
         setEvents(prev => [
           { id: Date.now().toString(), type: 'stars', message: `+${conquestBonus} ⭐ por conquistar território!`, timestamp: Date.now() },
@@ -345,6 +360,29 @@ export default function App() {
     }
 
     // Novo território (não sobrepõe nenhum existente)
+    const area = calculatePolygonArea(currentPath);
+
+    // Se a área for muito pequena (ex: linha reta), conta apenas como corrida sem conquista
+    if (area < 500) { // 500m² threshold
+      const distanceStars = Math.floor(distance * STAR_REWARDS.DISTANCE_KM);
+      const newStars = userStars + distanceStars;
+      setUserStars(newStars);
+
+      // Pelotão
+      if (currentUser.teamId) {
+        await addPointsToSquad(currentUser.teamId, currentUser.id, distanceStars);
+      }
+
+      setEvents(prev => [
+        { id: Date.now().toString(), type: 'stars', message: `+${distanceStars} ⭐ pela corrida!`, timestamp: Date.now() },
+        ...prev
+      ]);
+
+      setProcessing(false);
+      alert(`🏃 Corrida finalizada!\nVocê ganhou ${distanceStars} estrelas pela distância.\n(Para conquistar um território, feche um polígono maior)`);
+      return;
+    }
+
     const info = await generateTerritoryInfo(currentPath, distance);
     setSuggestedName(info.name);
     setSuggestedDescription(info.description);
@@ -415,6 +453,16 @@ export default function App() {
     const newStars = userStars + starsGained;
     setUserStars(newStars);
 
+    // Atualizar pontuação do pelotão (Guerra Interna)
+    if (currentUser.teamId) {
+      await addPointsToSquad(currentUser.teamId, currentUser.id, starsGained);
+    }
+
+    // Atualizar pontuação da guerra (se houver)
+    if (currentUser?.teamId) {
+      await updateBattleScore(currentUser.teamId, starsGained);
+    }
+
     setEvents(prev => [
       { id: Date.now().toString(), type: 'stars', message: `+${starsGained} ⭐ estrelas ganhas!`, timestamp: Date.now() },
       { id: (Date.now() + 1).toString(), type: 'conquer', message: `Você conquistou "${finalName}"!`, timestamp: Date.now(), territoryId: tempId },
@@ -451,10 +499,10 @@ export default function App() {
   });
 
   // Handler para criar equipe
-  const handleCreateTeam = async (name: string): Promise<string | null> => {
+  const handleCreateTeam = async (data: Partial<Team>): Promise<string | null> => {
     if (!currentUser) return null;
 
-    const team = await createTeam(name, currentUser.id, currentUser.name);
+    const team = await createTeam(data, currentUser.id, currentUser.name);
     if (team) {
       setCurrentTeam(team);
       // Atualizar usuário como dono
@@ -507,54 +555,27 @@ export default function App() {
   }
 
   return (
-    <div className="relative h-screen w-full bg-gradient-to-br from-orange-50 via-blue-50 to-cyan-50 text-gray-800 font-sans overflow-hidden">
-      <div className="absolute top-0 left-0 w-full z-20 p-4 pt-4 flex justify-between items-center pointer-events-none">
-        <div className={`flex items-center space-x-2 backdrop-blur-md px-3 py-1 rounded-full pointer-events-auto border shadow-sm transition-all ${gpsQuality === 'good' ? 'bg-green-500/90 border-green-600' :
-          gpsQuality === 'medium' ? 'bg-yellow-500/90 border-yellow-600' :
-            'bg-red-500/90 border-red-600'
-          }`}>
-          <div className={`w-2 h-2 rounded-full ${gpsQuality === 'good' ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]' :
-            gpsQuality === 'medium' ? 'bg-white animate-pulse' :
-              'bg-white animate-pulse'
-            }`}></div>
-          <span className="text-xs font-bold tracking-widest text-white">
-            {!userLocation ? 'GPS BUSCANDO' :
-              gpsQuality === 'good' ? `GPS ÓTIMO (${gpsAccuracy.toFixed(0)}m)` :
-                gpsQuality === 'medium' ? `GPS BOM (${gpsAccuracy.toFixed(0)}m)` :
-                  `GPS FRACO (${gpsAccuracy.toFixed(0)}m)`}
-          </span>
+    <AppShell
+      user={currentUser}
+      stars={userStars}
+      isRunning={isRunning}
+      onProfileClick={() => setShowProfile(true)}
+      onMenuClick={() => setShowProfile(true)}
+      onStartClick={handleStart}
+      onStopClick={handleStop}
+      onTeamClick={() => currentUser?.teamId ? setShowTeamDashboard(true) : setShowCreateTeam(true)}
+      onRankingClick={() => setShowTeamDashboard(true)} // Or dedicated ranking
+      onHelpClick={() => setShowGameRules(true)}
+      navContent={
+        <div className="pointer-events-auto">
+          <TerritoryFilter
+            currentFilter={territoryFilter}
+            onFilterChange={setTerritoryFilter}
+          />
         </div>
-        <div className="flex items-center space-x-2 pointer-events-auto">
-          <button onClick={() => setShowTutorial(true)} className="flex items-center space-x-2 px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-full border border-gray-200 hover:border-blue-500 transition-colors shadow-sm" title="Como Jogar">
-            <HelpCircle size={14} className="text-blue-500" />
-          </button>
-          <button onClick={() => setShowProfile(true)} className="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-orange-500 to-blue-500 backdrop-blur-md rounded-full border-0 hover:shadow-lg transition-all shadow-sm" title="Perfil">
-            <UserIcon size={14} className="text-white" />
-            <span className="text-xs font-bold uppercase text-white">{currentUser.name}</span>
-          </button>
-        </div>
-      </div>
-
-      {locationError && (
-        <div className="absolute top-24 left-4 right-4 z-50 bg-red-900/90 border border-red-500 text-white p-4 rounded-lg flex items-center space-x-3 backdrop-blur-md">
-          <AlertTriangle className="text-red-300" />
-          <span className="text-sm font-bold">{locationError}</span>
-        </div>
-      )}
-
-      {/* StarBar */}
-      <div className="absolute top-16 left-4 right-4 z-20">
-        <StarBar stars={userStars} compact />
-      </div>
-
-      {/* Filtro de Territórios */}
-      <div className="absolute top-28 right-4 z-20">
-        <TerritoryFilter
-          currentFilter={territoryFilter}
-          onFilterChange={setTerritoryFilter}
-        />
-      </div>
-
+      }
+    >
+      {/* --- MAP LAYER --- */}
       <GameMap
         currentPath={currentPath}
         territories={filteredTerritories}
@@ -563,23 +584,74 @@ export default function App() {
         focusTarget={mapFocusTarget}
       />
 
-      {/* RunMetrics durante corrida */}
-      {isRunning && currentPath.length > 0 && (
-        <RunMetrics
-          coordinates={currentPath}
-          distance={distance}
-          startTime={runStartTime}
-          isRunning={isRunning}
-        />
+      {/* --- FLOATING OVERLAYS (Managed by Shell Z-Index) --- */}
+
+      {/* GPS Status (Top Left, below bar) */}
+      <div className="absolute top-20 left-4 z-20 pointer-events-none">
+        <div className={`flex items-center space-x-2 backdrop-blur-md px-3 py-1 rounded-full border shadow-sm transition-all ${gpsQuality === 'good' ? 'bg-green-500/90 border-green-600' :
+          gpsQuality === 'medium' ? 'bg-yellow-500/90 border-yellow-600' :
+            'bg-red-500/90 border-red-600'
+          }`}>
+          <div className={`w-1.5 h-1.5 rounded-full ${gpsQuality === 'good' ? 'bg-white' : 'bg-white animate-pulse'}`}></div>
+          <span className="text-[10px] font-bold tracking-widest text-white">
+            {!userLocation ? 'BUSCANDO GPS' :
+              gpsQuality === 'good' ? 'GPS OK' :
+                `GPS ${gpsAccuracy.toFixed(0)}m`}
+          </span>
+        </div>
+      </div>
+
+      {/* Error Toast */}
+      {locationError && (
+        <div className="absolute top-28 left-4 right-4 z-50 bg-red-900/90 border border-red-500 text-white p-3 rounded-xl flex items-center space-x-3 backdrop-blur-md shadow-lg animate-fade-in-down">
+          <AlertTriangle className="text-red-300" size={16} />
+          <span className="text-xs font-bold">{locationError}</span>
+        </div>
       )}
 
-      <StatPanel distance={distance} territoriesCount={territories.filter(t => t.ownerId === currentUser.id).length} isRunning={isRunning} />
-      <ActivityFeed events={events} onEventClick={handleEventClick} />
+      {/* Run Metrics (Dynamic Island Style) */}
+      {isRunning && (
+        <div className="absolute bottom-28 left-4 right-4 z-20 flex justify-center pointer-events-none">
+          {/* Using existing RunMetrics but maybe simplified? Keeping as is for now */}
+          <RunMetrics
+            coordinates={currentPath}
+            distance={distance}
+            startTime={runStartTime}
+            isRunning={isRunning}
+          />
+        </div>
+      )}
 
+      {/* Stats Panel (Summary) */}
+      {!isRunning && (
+        <div className="absolute bottom-28 left-4 z-20 pointer-events-none">
+          <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-3 flex items-center gap-4">
+            <div>
+              <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Distância Total</div>
+              <div className="text-lg font-black text-white">{distance.toFixed(2)} <span className="text-xs text-gray-500">km</span></div>
+            </div>
+            <div className="h-8 w-px bg-white/10"></div>
+            <div>
+              <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Territórios</div>
+              <div className="text-lg font-black text-purple-400">{territories.filter(t => t.ownerId === currentUser?.id).length}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feed (Bottom Right, reduced size) */}
+      <div className="absolute bottom-28 right-4 z-20 w-48 pointer-events-none">
+        {/* Reuse ActivityFeed but maybe make it smaller or hidden by default */}
+        <ActivityFeed events={events.slice(0, 2)} onEventClick={handleEventClick} />
+      </div>
+
+      {/* --- MODALS & SCREENS --- */}
+
+      {/* Keeping these as Overlays */}
       <NamingModal isOpen={showNamingModal} suggestedName={suggestedName} suggestedDescription={suggestedDescription} strategicValue={pendingStrategicValue} onConfirm={handleConfirmTerritory} onCancel={() => setShowNamingModal(false)} />
 
-
       {showTutorial && <TutorialScreen onClose={() => setShowTutorial(false)} />}
+
       {showProfile && (
         <ProfileScreen
           user={currentUser}
@@ -604,54 +676,52 @@ export default function App() {
         />
       )}
 
+      {showTeamDashboard && currentTeam && currentUser && (
+        <TeamDashboard
+          team={currentTeam}
+          currentUser={{ id: currentUser.id, name: currentUser.name }}
+          onClose={() => setShowTeamDashboard(false)}
+          onCreateChallenge={(name, desc, points, start, end) => handleCreateChallenge(name, desc, points, start, end)}
+        />
+      )}
+
       {showAdminDashboard && (
         <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
       )}
 
-      {/* Modal de Seleção de Atividade */}
+      {/* Activity Selector Modal */}
       {showActivitySelector && (
-        <div className="fixed inset-0 z-[10001] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative">
+        <div className="fixed inset-0 z-[10001] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-700 p-6 rounded-3xl w-full max-w-sm">
+            <h3 className="text-white font-black text-xl mb-6 text-center">Escolha sua Modalidade</h3>
             <ActivityModeSelector
               selectedMode={selectedActivityMode}
               onSelectMode={setSelectedActivityMode}
             />
-            <div className="mt-4 flex justify-center space-x-3">
+            <div className="mt-8 flex justify-center space-x-3">
               <button
                 onClick={() => setShowActivitySelector(false)}
-                className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition-all"
+                className="flex-1 py-4 bg-gray-800 text-gray-400 font-bold rounded-xl transition-all"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleStartWithMode}
-                className="px-6 py-3 bg-gradient-to-r from-orange-500 to-blue-500 text-white font-bold rounded-xl hover:shadow-lg transition-all"
+                className="flex-1 py-4 bg-gradient-to-r from-orange-500 to-blue-500 text-white font-bold rounded-xl shadow-lg hover:shadow-orange-500/20"
               >
-                Iniciar Atividade
+                VAMOS! 🚀
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modais de Equipe */}
+      {/* Team Modals */}
       <CreateTeamModal
         isOpen={showCreateTeam}
         onClose={() => setShowCreateTeam(false)}
         onCreateTeam={handleCreateTeam}
       />
-
-      {currentTeam && showTeamDashboard && (
-        <TeamDashboard
-          team={currentTeam}
-          isOwner={currentUser?.role === 'owner'}
-          onClose={() => setShowTeamDashboard(false)}
-          onCreateChallenge={() => {
-            setShowTeamDashboard(false);
-            setShowCreateChallenge(true);
-          }}
-        />
-      )}
 
       {currentTeam && (
         <CreateChallengeModal
@@ -662,34 +732,22 @@ export default function App() {
         />
       )}
 
+      {/* Processing Spinner Overlay */}
       {processing && (
-        <div className="absolute inset-0 z-50 bg-black/80 flex flex-col items-center justify-center backdrop-blur-sm">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-neon-green mb-4"></div>
-          <h2 className="text-xl font-bold text-neon-green animate-pulse">ANALISANDO DADOS...</h2>
+        <div className="absolute inset-0 z-[100] bg-black/80 flex flex-col items-center justify-center backdrop-blur-md">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-neon-green mb-4 shadow-[0_0_20px_#39ff14]"></div>
+          <h2 className="text-2xl font-black text-white italic tracking-tighter animate-pulse">PROCESSANDO...</h2>
         </div>
       )}
 
-      <Controls isRunning={isRunning} onStart={handleStart} onStop={handleStop} onSimulate={toggleSimulation} isSimulating={isSimulating} />
+      {/* Controls (Hidden - logic only if needed, but AppShell handles buttons now) */}
+      <div className="hidden">
+        <Controls isRunning={isRunning} onStart={handleStart} onStop={handleStop} onSimulate={toggleSimulation} isSimulating={isSimulating} />
+      </div>
 
-
-      {/* Botão de Ajuda */}
-      <button
-        onClick={() => setShowGameRules(true)}
-        className="fixed bottom-20 right-4 z-20 bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110"
-        title="Como Jogar"
-      >
-        <HelpCircle size={24} />
-      </button>
-
-      {/* Modal de Regras */}
+      {/* Game Rules Modal */}
       {showGameRules && <GameRules onClose={() => setShowGameRules(false)} />}
 
-      <div className="absolute bottom-2 left-4 z-10 opacity-50 pointer-events-none">
-        <div className="flex items-center space-x-1 text-[10px] text-gray-500">
-          <Satellite size={10} />
-          <span>v8.0 • Sistema Anti-Fraude + Equipes</span>
-        </div>
-      </div>
-    </div>
+    </AppShell>
   );
 }

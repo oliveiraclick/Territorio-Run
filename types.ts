@@ -92,6 +92,17 @@ export interface Team {
   ownerName: string;
   createdAt: number;
   memberCount: number;
+  description?: string;
+  logoUrl?: string; // URL da logo
+  bannerUrl?: string; // URL do banner de fundo
+  address?: string; // Endereço do CT
+  socialLinks?: {
+    instagram?: string;
+    website?: string;
+  };
+  primaryColor?: string; // Cor personalizada da equipe
+  operatingHours?: string; // Horário de funcionamento
+  whatsapp?: string; // Número do WhatsApp
 }
 
 export interface Challenge {
@@ -116,4 +127,40 @@ export interface TeamMember {
   totalTerritories: number;
   totalStars: number;
   challengesCompleted: number;
+  squadId?: string; // ID do pelotão (se houver guerra interna)
+}
+
+export interface Squad {
+  id: string;
+  name: string;
+  teamId: string;
+  color: string;
+  totalPoints: number;
+  members: string[]; // IDs dos usuários
+}
+
+export interface InternalWar {
+  id: string;
+  teamId: string;
+  name: string;
+  status: 'active' | 'scheduled' | 'finished';
+  startDate: number;
+  endDate: number;
+  squads: Squad[];
+}
+
+export interface Battle {
+  id: string;
+  challengerTeamId: string;
+  challengerTeamName: string;
+  targetTeamId: string | null; // null = Aberto para qualquer um
+  targetTeamName: string | null;
+  status: 'pending' | 'active' | 'finished';
+  startDate: number;
+  duration: number; // em horas
+  endDate: number;
+  scoreChallenger: number;
+  scoreTarget: number;
+  winnerId?: string;
+  betAmount?: number; // Apostas em estrelas
 }

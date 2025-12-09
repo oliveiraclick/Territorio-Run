@@ -143,8 +143,13 @@ export const GameRules: React.FC<GameRulesProps> = ({ onClose }) => {
                                                 <span className="text-xl font-black text-yellow-700">+{STAR_REWARDS.CONQUER_TERRITORY} ⭐</span>
                                             </div>
                                         </div>
-                                        {/* CONQUISTAS */}
-                                        {activeTab === 'conquest' && (
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* CONQUISTAS */}
+                        {activeTab === 'conquest' && (
                                             <div className="space-y-6 animate-fade-in">
                                                 <div className="bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-2xl border-2 border-purple-400">
                                                     <div className="flex items-center space-x-3 mb-4">

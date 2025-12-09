@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, MapPin, Trophy, TrendingUp, Users } from 'lucide-react';
-import { Team } from '../../types';
-import { getTeamBySlug } from '../../services/teamService';
+import { Team, TeamMember } from '../../types';
+import { getTeamBySlug, getTeamRanking } from '../../services/teamService';
+import TeamLandingPage from '../Team/TeamLandingPage';
 
 interface AuthScreenProps {
   onRegister: (name: string, phone: string, password: string, teamId?: string, teamName?: string) => Promise<void>;
@@ -13,6 +14,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [inviteTeam, setInviteTeam] = useState<Team | null>(null);
+  const [showLandingPage, setShowLandingPage] = useState(true);
+  const [topMembers, setTopMembers] = useState<TeamMember[]>([]);
 
   // Detectar slug na URL
   useEffect(() => {
@@ -24,6 +27,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
         const team = await getTeamBySlug(slug);
         if (team) {
           setInviteTeam(team);
+          // Buscar ranking para a LP
+          const ranking = await getTeamRanking(team.id);
+          setTopMembers(ranking);
         }
       }
     };
@@ -72,58 +78,40 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
     },
   ];
 
+  // Se tiver equipe e estiver na LP, mostra a LP
+  if (inviteTeam && showLandingPage) {
+    return (
+      <TeamLandingPage
+        team={inviteTeam}
+        topMembers={topMembers}
+        onJoinClick={() => setShowLandingPage(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-50 to-cyan-50 flex relative overflow-hidden">
       {/* Background Image with Transparency */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <img
-          src="/runner-hero.png"
+          src="/background-with-logo.png"
           alt="Background"
           className="w-full h-full object-cover opacity-10"
         />
       </div>
-      {/* Left Side - Hero Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/90 to-blue-600/90 z-10" />
-        <img
-          src="/runner-hero.png"
-          alt="Runner"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="relative z-20 flex flex-col justify-center items-start p-16 text-white">
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                <Zap size={28} className="text-orange-500" fill="currentColor" />
-              </div>
-              <h1 className="text-4xl font-black">Territory Run</h1>
-            </div>
-            <p className="text-2xl font-light opacity-90">Conquista</p>
-          </div>
 
-          <div className="space-y-6 max-w-md">
-            <h2 className="text-3xl font-bold leading-tight">
-              Transforme seus treinos em conquistas épicas
-            </h2>
-            <p className="text-lg opacity-90">
-              Cada movimento é um território. Cada treino é uma vitória.
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* Right Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 z-10">
-        <div className="w-full max-w-md">
+      {/* Main Content - Login Form (Centered for Mobile/PWA) */}
+      <div className="relative z-10 w-full flex items-center justify-center p-6">
+        <div className="w-full max-w-md bg-white/80 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/50">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center space-x-3 mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-              <Zap size={32} className="text-white" fill="currentColor" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black text-gray-800">Territory Run</h1>
-              <p className="text-sm text-gray-600">Conquista</p>
-            </div>
+          {/* Mobile Logo */}
+          <div className="flex items-center justify-center mb-8">
+            <img
+              src="/brand-logo-login.png"
+              alt="Territory Run"
+              className="h-24 w-auto object-contain"
+            />
           </div>
 
           {/* Welcome Text */}
@@ -137,6 +125,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
                 <p className="text-white/90 text-sm">
                   Você está se cadastrando na equipe <strong>{inviteTeam.name}</strong>
                 </p>
+                <button
+                  onClick={() => setShowLandingPage(true)}
+                  className="mt-2 text-xs text-white underline hover:text-gray-100"
+                >
+                  Voltar para detalhes da equipe
+                </button>
               </div>
             ) : null}
             <h2 className="text-3xl font-black text-gray-800 mb-2">
@@ -226,7 +220,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

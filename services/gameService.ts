@@ -228,3 +228,23 @@ export const updateTerritoryOwner = async (territoryId: string, newOwnerId: stri
     return true;
   }
 };
+
+export const deleteTerritory = async (territoryId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('territories')
+      .delete()
+      .eq('id', territoryId);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.warn("Supabase unavailable. Deleting territory locally.");
+
+    // FALLBACK
+    let current = getLocal('local_territories') || [];
+    current = current.filter((t: Territory) => t.id !== territoryId);
+    saveLocal('local_territories', current);
+    return true;
+  }
+};
