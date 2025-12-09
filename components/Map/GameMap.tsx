@@ -20,6 +20,7 @@ interface GameMapProps {
   userLocation: Coordinate | null;
   gpsAccuracy?: number;
   focusTarget?: Coordinate | null; // New prop to force map center
+  selectedTerritoryId?: string | null;
 }
 
 // Component to recenter map when user moves, with manual override option
@@ -34,12 +35,14 @@ const MapController = ({ location, focusTarget }: { location: Coordinate | null,
       const currentCenter = map.getCenter();
       const dist = map.distance([location.lat, location.lng], currentCenter);
 
-      // If distance > 500 meters, SNAP to location instead of flying (avoids disorientation)
-      if (dist > 500) {
-        map.setView([location.lat, location.lng], ZOOM_LEVEL);
-      } else if (shouldAutoCenter) {
-        // Otherwise fly smoothly
-        map.flyTo([location.lat, location.lng], ZOOM_LEVEL, { animate: true, duration: 1 });
+      if (shouldAutoCenter) {
+        // If distance > 500 meters, SNAP to location instead of flying (avoids disorientation)
+        if (dist > 500) {
+          map.setView([location.lat, location.lng], ZOOM_LEVEL);
+        } else {
+          // Otherwise fly smoothly
+          map.flyTo([location.lat, location.lng], ZOOM_LEVEL, { animate: true, duration: 1 });
+        }
       }
     }
   }, [location, map, shouldAutoCenter, focusTarget]);
@@ -52,12 +55,19 @@ const MapController = ({ location, focusTarget }: { location: Coordinate | null,
     }
   }, [focusTarget, map]);
 
-  // Detect drag to disable auto-center
+  // Detect interaction to disable auto-center
   useEffect(() => {
-    const handleDrag = () => setShouldAutoCenter(false);
-    map.on('dragstart', handleDrag);
+    const disableAutoCenter = () => setShouldAutoCenter(false);
+
+    // Listen for any interaction that changes the view
+    map.on('dragstart', disableAutoCenter);
+    map.on('zoomstart', disableAutoCenter);
+    map.on('touchstart', disableAutoCenter); // Creating this listener to catch touch start on mobile
+
     return () => {
-      map.off('dragstart', handleDrag);
+      map.off('dragstart', disableAutoCenter);
+      map.off('zoomstart', disableAutoCenter);
+      map.off('touchstart', disableAutoCenter);
     }
   }, [map]);
 
@@ -73,8 +83,8 @@ const MapController = ({ location, focusTarget }: { location: Coordinate | null,
     <button
       onClick={handleRecenter}
       className={`absolute bottom-32 right-4 z-[400] p-3 rounded-full shadow-lg border transition-all duration-300 ${shouldAutoCenter
-          ? "bg-gray-900/50 text-neon-green border-neon-green/50"
-          : "bg-neon-red text-white border-neon-red animate-pulse shadow-[0_0_10px_rgba(255,7,58,0.5)]"
+        ? "bg-gray-900/50 text-neon-green border-neon-green/50"
+        : "bg-neon-red text-white border-neon-red animate-pulse shadow-[0_0_10px_rgba(255,7,58,0.5)]"
         }`}
       title="Centralizar em mim"
     >
@@ -83,7 +93,7 @@ const MapController = ({ location, focusTarget }: { location: Coordinate | null,
   );
 };
 
-const GameMap: React.FC<GameMapProps> = ({ currentPath, territories, userLocation, gpsAccuracy = 0, focusTarget = null }) => {
+const GameMap: React.FC<GameMapProps> = ({ currentPath, territories, userLocation, gpsAccuracy = 0, focusTarget = null, selectedTerritoryId = null }) => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -150,8 +160,9 @@ const GameMap: React.FC<GameMapProps> = ({ currentPath, territories, userLocatio
               color: terr.color,
               fillColor: terr.color,
               fillOpacity: 0.3,
-              weight: terr.id === focusTarget?.timestamp?.toString() ? 4 : 2,
-              dashArray: terr.ownerId !== 'user_1' ? '5, 10' : undefined
+              weight: terr.id === selectedTerritoryId ? 5 : 2, // Highlight if selected
+              dashArray: terr.ownerId !== 'user_1' ? '5, 10' : undefined,
+              opacity: terr.id === selectedTerritoryId ? 1 : 0.8 // Enhance opacity if selected
             }}
           >
             <Popup closeButton={false} offset={[0, -5]}>

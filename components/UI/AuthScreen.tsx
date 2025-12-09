@@ -106,84 +106,75 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
         <div className="w-full max-w-md bg-white/80 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/50">
           {/* Mobile Logo */}
           {/* Mobile Logo */}
-          <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center justify-center mb-4">
             <img
               src="/brand-logo-login.png"
               alt="Territory Run"
-              className="h-40 w-auto object-contain"
+              className="h-60 w-auto object-contain drop-shadow-lg"
             />
           </div>
 
           {/* Welcome Text */}
-          <div className="mb-8">
+          <div className="mb-4 text-center">
             {inviteTeam ? (
-              <div className="bg-gradient-to-r from-orange-500 to-blue-500 p-4 rounded-xl mb-4">
-                <div className="flex items-center space-x-3 mb-2">
-                  <Users className="text-white" size={24} />
-                  <h3 className="text-lg font-black text-white">Convite de Equipe!</h3>
+              <div className="bg-gradient-to-r from-orange-500 to-blue-500 p-3 rounded-xl mb-3">
+                <div className="flex items-center justify-center space-x-2 mb-1">
+                  <Users className="text-white" size={20} />
+                  <h3 className="text-md font-black text-white">Convite de Equipe!</h3>
                 </div>
-                <p className="text-white/90 text-sm">
-                  Você está se cadastrando na equipe <strong>{inviteTeam.name}</strong>
+                <p className="text-white/90 text-xs">
+                  Equipe: <strong>{inviteTeam.name}</strong>
                 </p>
                 <button
                   onClick={() => setShowLandingPage(true)}
-                  className="mt-2 text-xs text-white underline hover:text-gray-100"
+                  className="mt-1 text-xs text-white underline hover:text-gray-100"
                 >
-                  Voltar para detalhes da equipe
+                  Ver detalhes
                 </button>
               </div>
             ) : null}
-            <h2 className="text-3xl font-black text-gray-800 mb-2">
+            <h2 className="text-2xl font-black text-gray-800 mb-1">
               Bem-vindo! 👋
             </h2>
-            <p className="text-gray-600">
+            <p className="text-xs text-gray-600">
               {inviteTeam
-                ? `Complete seu cadastro para entrar na equipe ${inviteTeam.name}`
-                : 'Entre ou crie sua conta para começar a conquistar'
+                ? `Entre para a equipe ${inviteTeam.name}`
+                : 'Conquiste o mundo correndo!'
               }
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 mb-8">
+          <form onSubmit={handleSubmit} className="space-y-3 mb-4">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Codinome
-              </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors bg-white text-gray-800 placeholder-gray-400"
-                placeholder="Seu nome de guerreiro"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors bg-white/80 text-gray-800 placeholder-gray-500 font-bold"
+                placeholder="Seu Codinome"
                 disabled={loading}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Telefone
-              </label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors bg-white text-gray-800 placeholder-gray-400"
-                placeholder="(00) 00000-0000"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors bg-white/80 text-gray-800 placeholder-gray-500 font-bold"
+                placeholder="Telefone"
                 disabled={loading}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Senha
-              </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-cyan-500 focus:outline-none transition-colors bg-white text-gray-800 placeholder-gray-400"
-                placeholder="Sua senha secreta"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-cyan-500 focus:outline-none transition-colors bg-white/80 text-gray-800 placeholder-gray-500 font-bold"
+                placeholder="Senha Secreta"
                 disabled={loading}
               />
             </div>
@@ -191,7 +182,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-blue-500 text-white font-black py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+              className="w-full bg-gradient-to-r from-orange-500 to-blue-500 text-white font-black py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -199,13 +190,13 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
                   Entrando...
                 </span>
               ) : (
-                'Começar a Conquistar 🚀'
+                'ENTRAR / CADASTRAR 🚀'
               )}
             </button>
           </form>
 
-          {/* Features */}
-          <div className="space-y-4">
+          {/* Features - Hidden on small mobile screens to save space */}
+          <div className="space-y-4 hidden md:block">
             {features.map((feature, index) => (
               <div key={index} className="flex items-start space-x-3 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="flex-shrink-0 mt-0.5">

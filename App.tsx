@@ -582,6 +582,7 @@ export default function App() {
         userLocation={userLocation}
         gpsAccuracy={gpsAccuracy}
         focusTarget={mapFocusTarget}
+        selectedTerritoryId={selectedTerritoryId}
       />
 
       {/* --- FLOATING OVERLAYS (Managed by Shell Z-Index) --- */}
