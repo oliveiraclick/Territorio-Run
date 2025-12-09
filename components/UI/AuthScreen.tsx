@@ -110,7 +110,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
             <img
               src="/brand-logo-login.png"
               alt="Territory Run"
-              className="h-24 w-auto object-contain"
+              className="h-40 w-auto object-contain"
             />
           </div>
 
