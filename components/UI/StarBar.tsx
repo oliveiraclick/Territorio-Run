@@ -9,7 +9,7 @@ interface StarBarProps {
 
 export const StarBar: React.FC<StarBarProps> = ({ stars, compact = false }) => {
     const level = calculateLevel(stars);
-    const progress = getLevelProgress(stars);
+    const progress = getLevelProgress(stars, level);
     const starsForNext = getStarsForNextLevel(level);
     const currentLevelStars = stars - (level > 1 ? getStarsForNextLevel(level - 1) : 0);
 

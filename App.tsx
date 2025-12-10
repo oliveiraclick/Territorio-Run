@@ -110,10 +110,10 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleRegister = async (name: string, phone: string, password: string, teamId?: string, teamName?: string) => {
+  const handleRegister = async (name: string, phone: string, password: string, teamId?: string, teamName?: string, role?: 'owner' | 'member' | 'individual', companyName?: string, cnpj?: string) => {
     setLoadingAuth(true);
     try {
-      const user = await getOrCreateUser(name, phone, password);
+      const user = await getOrCreateUser(name, phone, password, role, companyName, cnpj);
       if (user) {
         // Se tem teamId, vincular à equipe
         if (teamId && teamName) {

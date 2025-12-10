@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#39ff14" />
+  <meta name="theme-color" content="#f59e0b" />
 
   <!-- PWA Settings -->
   <link rel="manifest" href="./manifest.json" />
@@ -21,12 +21,20 @@
       theme: {
         extend: {
           colors: {
-            'neon-green': '#39ff14',
+            'gold-400': '#fbbf24',
+            'gold-500': '#f59e0b',
+            'gold-600': '#d97706',
+            'surface-dark': '#18181b',
+            'surface-light': '#ffffff',
+            'neon-green': '#39ff14', // Mantendo para compatibilidade temporária
             'neon-red': '#ff073a',
             'neon-blue': '#00f3ff',
             'neon-purple': '#9d00ff',
-            'dark-bg': '#0a0a0a',
-            'panel-bg': 'rgba(20, 20, 20, 0.9)'
+            'dark-bg': '#09090b', // Zinc 950
+            'panel-bg': 'rgba(24, 24, 27, 0.95)' // Zinc 900 + opacity
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
           }
         }
       }

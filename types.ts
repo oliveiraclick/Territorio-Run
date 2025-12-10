@@ -49,6 +49,8 @@ export interface User {
   teamId?: string; // ID da equipe
   teamName?: string; // Nome da equipe
   role?: 'owner' | 'member' | 'individual'; // Papel do usuário
+  companyName?: string; // Nome da Assessoria (se role = owner)
+  cnpj?: string; // CNPJ da Assessoria (se role = owner)
 }
 
 export interface ActivityEvent {

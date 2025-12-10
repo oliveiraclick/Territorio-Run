@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, MapPin, Trophy, TrendingUp, Users } from 'lucide-react';
+import { Zap, MapPin, Trophy, TrendingUp, Users, Briefcase, Building } from 'lucide-react';
 import { Team, TeamMember } from '../../types';
 import { getTeamBySlug, getTeamRanking } from '../../services/teamService';
 import TeamLandingPage from '../Team/TeamLandingPage';
 
 interface AuthScreenProps {
-  onRegister: (name: string, phone: string, password: string, teamId?: string, teamName?: string) => Promise<void>;
+  onRegister: (name: string, phone: string, password: string, teamId?: string, teamName?: string, role?: 'owner' | 'member' | 'individual', companyName?: string, cnpj?: string) => Promise<void>;
 }
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
+  const [isBusiness, setIsBusiness] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [cnpj, setCnpj] = useState('');
   const [loading, setLoading] = useState(false);
   const [inviteTeam, setInviteTeam] = useState<Team | null>(null);
   const [showLandingPage, setShowLandingPage] = useState(true);
@@ -39,9 +42,17 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || !password.trim()) {
-      alert('Por favor, preencha todos os campos');
-      return;
+
+    if (isBusiness) {
+      if (!companyName.trim() || !cnpj.trim() || !name.trim() || !phone.trim() || !password.trim()) {
+        alert('Por favor, preencha todos os campos da empresa.');
+        return;
+      }
+    } else {
+      if (!name.trim() || !phone.trim() || !password.trim()) {
+        alert('Por favor, preencha todos os campos.');
+        return;
+      }
     }
 
     setLoading(true);
@@ -51,7 +62,10 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
         phone.trim(),
         password.trim(),
         inviteTeam?.id,
-        inviteTeam?.name
+        inviteTeam?.name,
+        isBusiness ? 'owner' : 'individual',
+        isBusiness ? companyName : undefined,
+        isBusiness ? cnpj : undefined
       );
     } catch (error) {
       console.error('Erro no registro:', error);
@@ -62,17 +76,17 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
 
   const features = [
     {
-      icon: <MapPin className="text-orange-500" size={24} />,
+      icon: <MapPin className="text-gold-500" size={24} />,
       title: 'Conquiste Territórios',
       description: 'Transforme seus treinos em conquistas reais'
     },
     {
-      icon: <Trophy className="text-blue-500" size={24} />,
+      icon: <Trophy className="text-gold-400" size={24} />,
       title: 'Ganhe Estrelas',
       description: 'Suba de nível e desbloqueie conquistas'
     },
     {
-      icon: <TrendingUp className="text-cyan-500" size={24} />,
+      icon: <TrendingUp className="text-yellow-300" size={24} />,
       title: 'Acompanhe Progresso',
       description: 'Métricas em tempo real de cada treino'
     },
@@ -90,37 +104,57 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
   }
 
   return (
-    <div className="min-h-screen bg-dark-bg font-sans selection:bg-neon-green selection:text-black flex relative overflow-hidden">
+    <div className="min-h-screen bg-dark-bg font-sans selection:bg-gold-500 selection:text-black flex relative overflow-hidden">
       {/* Background Image with Transparency */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black/90 z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black/95 z-10"></div>
         <img
           src="/background-with-logo.png"
           alt="Background"
-          className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+          className="w-full h-full object-cover opacity-30 mix-blend-overlay"
         />
       </div>
 
 
-      {/* Main Content - Login Form (Centered for Mobile/PWA) */}
+      {/* Main Content - Login Form */}
       <div className="relative z-10 w-full flex items-center justify-center p-6">
-        <div className="w-full max-w-md bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/10">
+        <div className="w-full max-w-md bg-surface-dark/90 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/5">
           {/* Mobile Logo */}
-          <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center justify-center mb-6">
             <img
               src="/brand-logo-login.png"
               alt="Territory Run"
-              className="h-48 w-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-transform hover:scale-105 duration-500"
+              className="h-[60px] w-auto object-contain drop-shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-transform hover:scale-105 duration-500"
             />
           </div>
 
+          {/* Business Toggle Tabs */}
+          {!inviteTeam && (
+            <div className="flex p-1 bg-black/40 rounded-xl mb-6 border border-white/5">
+              <button
+                type="button"
+                onClick={() => setIsBusiness(false)}
+                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${!isBusiness ? 'bg-gold-500 text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                Sou Atleta
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsBusiness(true)}
+                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${isBusiness ? 'bg-gold-500 text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                Sou Assessoria
+              </button>
+            </div>
+          )}
+
           {/* Welcome Text */}
-          <div className="mb-8 text-center">
+          <div className="mb-6 text-center">
             {inviteTeam ? (
-              <div className="bg-gradient-to-r from-neon-green to-neon-blue p-[1px] rounded-2xl mb-4 shadow-[0_0_20px_rgba(57,255,20,0.2)]">
+              <div className="bg-gradient-to-r from-gold-600 to-gold-400 p-[1px] rounded-2xl mb-4 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
                 <div className="bg-black/90 rounded-2xl p-4">
                   <div className="flex items-center justify-center space-x-2 mb-1">
-                    <Users className="text-neon-green" size={20} />
+                    <Users className="text-gold-500" size={20} />
                     <h3 className="text-md font-black text-white">Convite de Equipe!</h3>
                   </div>
                   <p className="text-gray-300 text-xs">
@@ -128,55 +162,98 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
                   </p>
                   <button
                     onClick={() => setShowLandingPage(true)}
-                    className="mt-2 text-xs text-neon-blue underline hover:text-white transition-colors"
+                    className="mt-2 text-xs text-gold-500 underline hover:text-white transition-colors"
                   >
                     Ver detalhes
                   </button>
                 </div>
               </div>
             ) : null}
-            <h2 className="text-3xl font-black text-white mb-2 tracking-tight">
-              Bem-vindo! 👋
+
+            <h2 className="text-2xl font-black text-white mb-1 tracking-tight">
+              {isBusiness ? 'Cadastro de Assessoria 🏢' : 'Bora Correr! 🏃'}
             </h2>
-            <p className="text-sm text-gray-400 font-medium">
-              {inviteTeam
-                ? `Entre para a equipe ${inviteTeam.name}`
-                : 'Conquiste o mundo correndo!'
+            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
+              {isBusiness
+                ? 'Cadastre sua empresa e gerencie sua equipe.'
+                : inviteTeam
+                  ? `Entre para a equipe ${inviteTeam.name}`
+                  : 'Acesse para dominar territórios.'
               }
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+          <form onSubmit={handleSubmit} className="space-y-3 mb-6">
+
+            {isBusiness && (
+              <>
+                <div className="group">
+                  <label className="block text-[10px] uppercase font-bold text-gold-500 mb-1 ml-2">Nome da Assessoria</label>
+                  <div className="relative">
+                    <Building className="absolute left-4 top-3.5 text-gray-500" size={16} />
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      className="w-full pl-12 pr-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm"
+                      placeholder="EX: IRON RUNNERS"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+                <div className="group">
+                  <label className="block text-[10px] uppercase font-bold text-gold-500 mb-1 ml-2">CNPJ</label>
+                  <div className="relative">
+                    <Briefcase className="absolute left-4 top-3.5 text-gray-500" size={16} />
+                    <input
+                      type="text"
+                      value={cnpj}
+                      onChange={(e) => setCnpj(e.target.value)}
+                      className="w-full pl-12 pr-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm"
+                      placeholder="00.000.000/0000-00"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="group">
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:border-neon-green/50 focus:ring-1 focus:ring-neon-green/50 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-bold text-sm"
-                placeholder="SEU CODINOME"
-                disabled={loading}
-              />
+              <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1 ml-2">{isBusiness ? 'Seu Nome (Responsável)' : 'Seu Codinome'}</label>
+              <div className="relative">
+                <Users className="absolute left-4 top-3.5 text-gray-500" size={16} />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full pl-12 pr-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm"
+                  placeholder={isBusiness ? "SEU NOME" : "SEU APELIDO NA CORRIDA"}
+                  disabled={loading}
+                />
+              </div>
             </div>
 
             <div className="group">
+              <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1 ml-2">Celular / WhatsApp</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/50 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-bold text-sm"
-                placeholder="SEU TELEFONE"
+                className="w-full px-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm"
+                placeholder="(11) 99999-9999"
                 disabled={loading}
               />
             </div>
 
             <div className="group">
+              <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1 ml-2">Senha Secreta</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:border-neon-purple/50 focus:ring-1 focus:ring-neon-purple/50 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-bold text-sm"
-                placeholder="SENHA SECRETA"
+                className="w-full px-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm"
+                placeholder="••••••••"
                 disabled={loading}
               />
             </div>
@@ -184,25 +261,39 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-neon-green to-emerald-600 text-black font-black py-4 rounded-2xl shadow-[0_0_20px_rgba(57,255,20,0.3)] hover:shadow-[0_0_30px_rgba(57,255,20,0.5)] transform hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg tracking-wide uppercase mt-4 border border-neon-green/20"
+              className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all group ${loading ? 'bg-gray-700 cursor-not-allowed text-gray-500' : 'bg-gold-500 hover:bg-gold-400 text-black shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.5)]'}`}
             >
               {loading ? (
-                <span className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
-                  Entrando...
-                </span>
+                <span>Carregando...</span>
               ) : (
-                'Entrar / Cadastrar 🚀'
+                <>
+                  <Zap size={20} className={`fill-black ${!isBusiness && 'animate-pulse'}`} />
+                  <span>{isBusiness ? 'Cadastrar Assessoria' : inviteTeam ? 'Aceitar Convite' : 'Começar Agora'}</span>
+                </>
               )}
             </button>
           </form>
+
+          {/* Explicit Toggle for Consultancy Visibility */}
+          {!inviteTeam && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => setIsBusiness(!isBusiness)}
+                className="text-xs font-bold text-gray-500 hover:text-gold-500 transition-colors uppercase tracking-widest border-b border-transparent hover:border-gold-500 pb-0.5"
+              >
+                {isBusiness ? 'Voltar para cadastro de Atleta' : 'Assessoria? Cadastre-se aqui.'}
+              </button>
+            </div>
+          )}
+
 
           {/* Features - Hidden on small mobile screens to save space */}
           <div className="space-y-3 hidden md:block pt-4 border-t border-white/10">
             {features.map((feature, index) => (
               <div key={index} className="flex items-center space-x-4 p-3 rounded-xl transition-colors hover:bg-white/5">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
-                  {React.cloneElement(feature.icon as any, { className: "text-gray-300" })}
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                  {React.cloneElement(feature.icon as any, { className: "" })}
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-200 text-sm">{feature.title}</h3>

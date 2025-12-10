@@ -122,6 +122,64 @@ export const createTeam = async (teamData: Partial<Team>, ownerId: string, owner
 };
 
 /**
+ * Atualiza os dados da equipe
+ * @param teamId ID da equipe
+ * @param updates Dados para atualizar
+ * @returns Equipe atualizada ou null
+ */
+export const updateTeam = async (teamId: string, updates: Partial<Team>): Promise<Team | null> => {
+    try {
+        const { data, error } = await supabase
+            .from('teams')
+            .update({
+                description: updates.description,
+                logo_url: updates.logoUrl,
+                banner_url: updates.bannerUrl,
+                address: updates.address,
+                operating_hours: updates.operatingHours,
+                whatsapp: updates.whatsapp,
+                social_links: updates.socialLinks,
+                primary_color: updates.primaryColor
+            })
+            .eq('id', teamId)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        return {
+            id: data.id,
+            name: data.name,
+            slug: data.slug,
+            ownerId: data.owner_id,
+            ownerName: data.owner_name,
+            createdAt: new Date(data.created_at).getTime(),
+            memberCount: data.member_count,
+            description: data.description,
+            logoUrl: data.logo_url,
+            bannerUrl: data.banner_url,
+            address: data.address,
+            operatingHours: data.operating_hours,
+            whatsapp: data.whatsapp,
+            socialLinks: data.social_links,
+            primaryColor: data.primary_color
+        };
+    } catch (error) {
+        console.warn("Supabase unavailable. Updating team locally.");
+        const teams = getLocal('local_teams') || [];
+        const index = teams.findIndex((t: Team) => t.id === teamId);
+
+        if (index !== -1) {
+            const updatedTeam = { ...teams[index], ...updates };
+            teams[index] = updatedTeam;
+            saveLocal('local_teams', teams);
+            return updatedTeam;
+        }
+        return null;
+    }
+};
+
+/**
  * Busca equipe pelo slug
  * @param slug Slug da equipe
  * @returns Equipe ou null
@@ -233,10 +291,10 @@ export const getTeamMembers = async (teamId: string): Promise<TeamMember[]> => {
             userId: member.id,
             userName: member.name,
             joinedAt: new Date(member.joined_at).getTime(),
-            totalDistance: 0, // TODO: calcular do histórico
-            totalTerritories: 0, // TODO: calcular
-            totalStars: 0, // TODO: calcular
-            challengesCompleted: 0 // TODO: calcular
+            totalDistance: member.total_distance || 0, // Using field if exists, or 0
+            totalTerritories: member.territories_held || 0,
+            totalStars: member.score || 0, // Using real score from profile
+            challengesCompleted: 0 // TODO: calcuar
         }));
     } catch (error) {
         console.warn("Supabase unavailable. Fetching local members.");

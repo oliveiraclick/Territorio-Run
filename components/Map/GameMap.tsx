@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Polyline, Polygon, Circle, useMap, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, Polygon, Circle, useMap, Popup, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import { Coordinate, Territory } from '../../types';
 import { LocateFixed, Satellite, User, Trophy } from 'lucide-react';
@@ -153,41 +153,83 @@ const GameMap: React.FC<GameMapProps> = ({ currentPath, territories, userLocatio
 
         {/* Existing Territories */}
         {territories.map((terr) => (
-          <Polygon
-            key={terr.id}
-            positions={terr.coordinates.map(c => [c.lat, c.lng])}
-            pathOptions={{
-              color: terr.color,
-              fillColor: terr.color,
-              fillOpacity: 0.3,
-              weight: terr.id === selectedTerritoryId ? 5 : 2, // Highlight if selected
-              dashArray: terr.ownerId !== 'user_1' ? '5, 10' : undefined,
-              opacity: terr.id === selectedTerritoryId ? 1 : 0.8 // Enhance opacity if selected
-            }}
-          >
-            <Popup closeButton={false} offset={[0, -5]}>
-              <div className="flex flex-col min-w-[150px]">
-                <h3 className="text-sm font-black uppercase tracking-widest mb-1 border-b border-gray-700 pb-1 text-white">
-                  {terr.name}
-                </h3>
-                <div className="space-y-1 mt-1">
-                  <div className="flex items-center text-xs text-gray-300">
-                    <User size={10} className="mr-1 text-neon-green" />
-                    <span>Dono: <strong className="text-white">{terr.ownerName || "Desconhecido"}</strong></span>
+          <React.Fragment key={terr.id}>
+            <Polygon
+              positions={terr.coordinates.map(c => [c.lat, c.lng])}
+              pathOptions={{
+                color: terr.color,
+                fillColor: terr.color,
+                fillOpacity: 0.3,
+                weight: terr.id === selectedTerritoryId ? 5 : 2,
+                dashArray: terr.ownerId !== 'user_1' ? '5, 10' : undefined,
+                opacity: terr.id === selectedTerritoryId ? 1 : 0.8
+              }}
+            >
+              <Popup closeButton={false} offset={[0, -5]}>
+                <div className="flex flex-col min-w-[150px]">
+                  <h3 className="text-sm font-black uppercase tracking-widest mb-1 border-b border-gray-700 pb-1 text-white">
+                    {terr.name}
+                  </h3>
+                  <div className="space-y-1 mt-1">
+                    <div className="flex items-center text-xs text-gray-300">
+                      <User size={10} className="mr-1 text-neon-green" />
+                      <span>Dono: <strong className="text-white">{terr.ownerName || "Desconhecido"}</strong></span>
+                    </div>
+                    <div className="flex items-center text-xs text-gray-300">
+                      <Trophy size={10} className="mr-1 text-yellow-400" />
+                      <span>Valor: <strong className="text-yellow-400">{terr.value}</strong> pts</span>
+                    </div>
+                    {terr.description && (
+                      <p className="text-[9px] text-gray-400 italic mt-2 border-t border-gray-800 pt-1 leading-tight">
+                        "{terr.description}"
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-center text-xs text-gray-300">
-                    <Trophy size={10} className="mr-1 text-yellow-400" />
-                    <span>Valor: <strong className="text-yellow-400">{terr.value}</strong> pts</span>
-                  </div>
-                  {terr.description && (
-                    <p className="text-[9px] text-gray-400 italic mt-2 border-t border-gray-800 pt-1 leading-tight">
-                      "{terr.description}"
-                    </p>
-                  )}
                 </div>
-              </div>
-            </Popup>
-          </Polygon>
+              </Popup>
+            </Polygon>
+
+            {/* Owner Avatar Marker at Centroid */}
+            <Marker
+              position={[
+                terr.coordinates.reduce((sum, c) => sum + c.lat, 0) / terr.coordinates.length,
+                terr.coordinates.reduce((sum, c) => sum + c.lng, 0) / terr.coordinates.length
+              ]}
+              icon={L.divIcon({
+                className: 'bg-transparent border-none',
+                html: `<div style="
+                  width: 32px; 
+                  height: 32px; 
+                  border-radius: 50%; 
+                  background-color: ${terr.color}; 
+                  border: 2px solid white; 
+                  display: flex; 
+                  align-items: center; 
+                  justify-content: center; 
+                  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                  overflow: hidden;
+                ">
+                  <span style="font-weight: 900; color: white; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
+                    ${terr.ownerName ? terr.ownerName[0].toUpperCase() : '?'}
+                  </span>
+                </div>`
+              })}
+            >
+              <Popup closeButton={false} offset={[0, -5]}>
+                <div className="flex flex-col min-w-[150px]">
+                  <h3 className="text-sm font-black uppercase tracking-widest mb-1 border-b border-gray-700 pb-1 text-white">
+                    {terr.name}
+                  </h3>
+                  <div className="space-y-1 mt-1">
+                    <div className="flex items-center text-xs text-gray-300">
+                      <User size={10} className="mr-1 text-neon-green" />
+                      <span>Dono: <strong className="text-white">{terr.ownerName || "Desconhecido"}</strong></span>
+                    </div>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          </React.Fragment>
         ))}
 
         {/* Current Run Path */}

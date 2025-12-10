@@ -14,7 +14,7 @@ const getLocal = (key: string) => {
 
 // --- USERS ---
 
-export const getOrCreateUser = async (name: string, phone: string, password: string): Promise<User | null> => {
+export const getOrCreateUser = async (name: string, phone: string, password: string, role?: 'owner' | 'member' | 'individual', companyName?: string, cnpj?: string): Promise<User | null> => {
   // Clean phone for consistency (remove spaces, dashes, parens)
   const cleanPhone = phone.replace(/\D/g, '');
 
@@ -62,7 +62,7 @@ export const getOrCreateUser = async (name: string, phone: string, password: str
       console.log("Novo usuário. Criando conta protegida...");
       const { data: newUser, error: insertError } = await supabase
         .from('profiles')
-        .insert([{ name, phone: cleanPhone, score: 0, password: password }])
+        .insert([{ name, phone: cleanPhone, score: 0, password: password, role, company_name: companyName, cnpj }])
         .select()
         .single();
 
@@ -102,7 +102,10 @@ export const getOrCreateUser = async (name: string, phone: string, password: str
         password: password,
         score: 0,
         territoriesHeld: 0,
-        joinedAt: Date.now()
+        joinedAt: Date.now(),
+        role: role || 'individual',
+        companyName: companyName,
+        cnpj: cnpj
       };
       localUsers.push(user);
       saveLocal('local_users', localUsers);

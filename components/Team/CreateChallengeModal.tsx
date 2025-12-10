@@ -56,14 +56,14 @@ const CreateChallengeModal: React.FC<CreateChallengeModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-            <div className="bg-dark-bg max-w-lg w-full rounded-2xl shadow-2xl overflow-hidden border border-white/10">
+            <div className="bg-dark-bg max-w-lg w-full rounded-2xl shadow-2xl overflow-hidden border border-white/5">
                 {/* Header */}
-                <div className="bg-black/90 p-6 flex items-center justify-between border-b border-white/10">
+                <div className="bg-surface-dark p-6 flex items-center justify-between border-b border-white/5">
                     <div className="flex items-center space-x-3">
-                        <Target className="text-neon-purple" size={28} />
+                        <Target className="text-gold-500" size={28} />
                         <div>
                             <h2 className="text-2xl font-black text-white tracking-wide">Criar Desafio</h2>
-                            <p className="text-neon-purple text-sm font-bold uppercase tracking-wider">{teamName}</p>
+                            <p className="text-gold-500 text-xs font-bold uppercase tracking-wider">{teamName}</p>
                         </div>
                     </div>
                     <button
@@ -85,7 +85,7 @@ const CreateChallengeModal: React.FC<CreateChallengeModalProps> = ({
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Ex: Corrida do Parque"
-                            className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-purple focus:ring-1 focus:ring-neon-purple/50 focus:outline-none text-white font-semibold placeholder-gray-600 transition-colors"
+                            className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-gold-500 focus:ring-1 focus:ring-gold-500/50 focus:outline-none text-white font-semibold placeholder-gray-600 transition-colors"
                             maxLength={50}
                         />
                     </div>
@@ -99,7 +99,7 @@ const CreateChallengeModal: React.FC<CreateChallengeModalProps> = ({
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Descreva o desafio..."
-                            className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-purple focus:ring-1 focus:ring-neon-purple/50 focus:outline-none text-white resize-none placeholder-gray-600 transition-colors"
+                            className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-gold-500 focus:ring-1 focus:ring-gold-500/50 focus:outline-none text-white resize-none placeholder-gray-600 transition-colors"
                             rows={3}
                             maxLength={200}
                         />
@@ -111,14 +111,14 @@ const CreateChallengeModal: React.FC<CreateChallengeModalProps> = ({
                             Pontos do Desafio
                         </label>
                         <div className="flex items-center space-x-3">
-                            <Award className="text-neon-purple" size={20} />
+                            <Award className="text-gold-500" size={20} />
                             <input
                                 type="number"
                                 value={points}
                                 onChange={(e) => setPoints(Math.max(1, parseInt(e.target.value) || 0))}
                                 min="1"
                                 max="10000"
-                                className="flex-1 px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-purple focus:ring-1 focus:ring-neon-purple/50 focus:outline-none text-white font-bold transition-colors"
+                                className="flex-1 px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-gold-500 focus:ring-1 focus:ring-gold-500/50 focus:outline-none text-white font-bold transition-colors"
                             />
                             <span className="text-sm text-gray-500 font-bold">pontos</span>
                         </div>
@@ -134,7 +134,7 @@ const CreateChallengeModal: React.FC<CreateChallengeModalProps> = ({
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-purple focus:outline-none text-white transition-colors [color-scheme:dark]"
+                                className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-gold-500 focus:outline-none text-white transition-colors [color-scheme:dark]"
                             />
                         </div>
                         <div>
@@ -145,14 +145,14 @@ const CreateChallengeModal: React.FC<CreateChallengeModalProps> = ({
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-purple focus:outline-none text-white transition-colors [color-scheme:dark]"
+                                className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-gold-500 focus:outline-none text-white transition-colors [color-scheme:dark]"
                             />
                         </div>
                     </div>
 
                     {/* Info */}
-                    <div className="bg-neon-purple/5 border border-neon-purple/20 rounded-xl p-4">
-                        <p className="text-xs text-purple-300 leading-relaxed">
+                    <div className="bg-surface-dark border border-white/10 rounded-xl p-4">
+                        <p className="text-xs text-gray-400 leading-relaxed">
                             💡 Após criar o desafio, você precisará fazer uma corrida para definir o território do desafio.
                             Apenas membros da sua equipe verão este território no mapa.
                         </p>
@@ -168,9 +168,9 @@ const CreateChallengeModal: React.FC<CreateChallengeModalProps> = ({
                         </button>
                         <button
                             onClick={handleSubmit}
-                            className="flex-1 bg-neon-purple text-white font-bold py-3 rounded-xl hover:bg-purple-600 hover:shadow-[0_0_15px_rgba(157,0,255,0.4)] transition-all shadow-[0_0_10px_rgba(157,0,255,0.2)]"
+                            className="flex-1 bg-gradient-to-r from-gold-400 to-gold-600 text-black font-bold py-3 rounded-xl hover:shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-all shadow-lg"
                         >
-                            Criar e Iniciar Corrida
+                            Criar e Iniciar
                         </button>
                     </div>
                 </div>
