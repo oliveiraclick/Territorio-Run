@@ -25,13 +25,17 @@ import { calculateTotalDistance, generateRandomColor, isValidGPSAccuracy, should
 import { findOverlappingTerritories, validateConquest, calculateConquestBonus, getRequiredDistance } from './utils/territoryUtils';
 import { generateTerritoryInfo, generateRivalName } from './services/geminiService';
 import { getOrCreateUser, fetchAllTerritories, createTerritory, updateTerritoryOwner } from './services/gameService';
-import { addStars, STAR_REWARDS, isNightTime, calculateLevel } from './utils/starSystem';
+import { addStars, STAR_REWARDS, isNightTime } from './utils/starSystem'; // Keep existing imports for now
+import { calculateLevel } from './utils/starSystem'; // Add calculateLevel separately if needed, or merge
+import { triggerConquestConfetti, triggerLevelUpConfetti } from './utils/celebration';
+import { playAudio } from './utils/audioManager';
 import { calculatePolygonArea } from './utils/metricsCalculator';
 import { createTeam, joinTeam, addPointsToSquad } from './services/teamService';
 import { createChallenge } from './services/challengeService';
 import { updateBattleScore } from './services/battleService';
 import { calculateAverageSpeed, calculateMaxSpeed, validateActivity, calculateAdjustedPoints } from './utils/activityUtils';
 import { Watch, Menu, AlertTriangle, Satellite, User as UserIcon, HelpCircle } from 'lucide-react';
+import { ShareCard } from './components/Social/ShareCard';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -81,6 +85,8 @@ export default function App() {
 
   // Estado para regras do jogo
   const [showGameRules, setShowGameRules] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
+  const [lastConqueredTerritory, setLastConqueredTerritory] = useState<Territory | null>(null);
 
   const simulationInterval = useRef<any>(null);
   const watchId = useRef<number | null>(null);
@@ -469,6 +475,20 @@ export default function App() {
       ...prev
     ]);
     setShowNamingModal(false);
+
+    // --- WOW FEATURES ---
+    triggerConquestConfetti();
+    playAudio(`Território ${finalName} conquistado! Você ganhou ${starsGained} estrelas.`);
+
+    // Check level up (simplificado)
+    const oldLevel = calculateLevel(userStars);
+    const newLevel = calculateLevel(newStars);
+    if (newLevel > oldLevel) {
+      setTimeout(() => {
+        triggerLevelUpConfetti();
+        playAudio(`Parabéns! Você alcançou o nível ${newLevel}!`);
+      }, 2000);
+    }
   };
 
   // Handler para clique em card de território
@@ -748,6 +768,15 @@ export default function App() {
 
       {/* Game Rules Modal */}
       {showGameRules && <GameRules onClose={() => setShowGameRules(false)} />}
+
+      {/* Social Share Card */}
+      {showShareCard && lastConqueredTerritory && currentUser && (
+        <ShareCard
+          territory={lastConqueredTerritory}
+          user={currentUser}
+          onClose={() => setShowShareCard(false)}
+        />
+      )}
 
     </AppShell>
   );

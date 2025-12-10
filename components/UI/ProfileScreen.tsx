@@ -141,7 +141,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                     </div>
                 )}
 
-                <div className="p-6 space-y-6 bg-gradient-to-br from-orange-50 via-blue-50 to-cyan-50">
+                <div className="p-6 pb-32 space-y-6 bg-gradient-to-br from-orange-50 via-blue-50 to-cyan-50">
 
                     {/* Estatísticas Principais */}
                     <section>
