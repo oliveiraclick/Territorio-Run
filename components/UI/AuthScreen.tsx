@@ -90,53 +90,55 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-50 to-cyan-50 flex relative overflow-hidden">
+    <div className="min-h-screen bg-dark-bg font-sans selection:bg-neon-green selection:text-black flex relative overflow-hidden">
       {/* Background Image with Transparency */}
       <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black/90 z-10"></div>
         <img
           src="/background-with-logo.png"
           alt="Background"
-          className="w-full h-full object-cover opacity-10"
+          className="w-full h-full object-cover opacity-40 mix-blend-overlay"
         />
       </div>
 
 
       {/* Main Content - Login Form (Centered for Mobile/PWA) */}
       <div className="relative z-10 w-full flex items-center justify-center p-6">
-        <div className="w-full max-w-md bg-white/80 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/50">
+        <div className="w-full max-w-md bg-black/60 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/10">
           {/* Mobile Logo */}
-          {/* Mobile Logo */}
-          <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center justify-center mb-8">
             <img
               src="/brand-logo-login.png"
               alt="Territory Run"
-              className="h-60 w-auto object-contain drop-shadow-lg"
+              className="h-48 w-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-transform hover:scale-105 duration-500"
             />
           </div>
 
           {/* Welcome Text */}
-          <div className="mb-4 text-center">
+          <div className="mb-8 text-center">
             {inviteTeam ? (
-              <div className="bg-gradient-to-r from-orange-500 to-blue-500 p-3 rounded-xl mb-3">
-                <div className="flex items-center justify-center space-x-2 mb-1">
-                  <Users className="text-white" size={20} />
-                  <h3 className="text-md font-black text-white">Convite de Equipe!</h3>
+              <div className="bg-gradient-to-r from-neon-green to-neon-blue p-[1px] rounded-2xl mb-4 shadow-[0_0_20px_rgba(57,255,20,0.2)]">
+                <div className="bg-black/90 rounded-2xl p-4">
+                  <div className="flex items-center justify-center space-x-2 mb-1">
+                    <Users className="text-neon-green" size={20} />
+                    <h3 className="text-md font-black text-white">Convite de Equipe!</h3>
+                  </div>
+                  <p className="text-gray-300 text-xs">
+                    Equipe: <strong className="text-white">{inviteTeam.name}</strong>
+                  </p>
+                  <button
+                    onClick={() => setShowLandingPage(true)}
+                    className="mt-2 text-xs text-neon-blue underline hover:text-white transition-colors"
+                  >
+                    Ver detalhes
+                  </button>
                 </div>
-                <p className="text-white/90 text-xs">
-                  Equipe: <strong>{inviteTeam.name}</strong>
-                </p>
-                <button
-                  onClick={() => setShowLandingPage(true)}
-                  className="mt-1 text-xs text-white underline hover:text-gray-100"
-                >
-                  Ver detalhes
-                </button>
               </div>
             ) : null}
-            <h2 className="text-2xl font-black text-gray-800 mb-1">
+            <h2 className="text-3xl font-black text-white mb-2 tracking-tight">
               Bem-vindo! 👋
             </h2>
-            <p className="text-xs text-gray-600">
+            <p className="text-sm text-gray-400 font-medium">
               {inviteTeam
                 ? `Entre para a equipe ${inviteTeam.name}`
                 : 'Conquiste o mundo correndo!'
@@ -145,36 +147,36 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3 mb-4">
-            <div>
+          <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+            <div className="group">
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors bg-white/80 text-gray-800 placeholder-gray-500 font-bold"
-                placeholder="Seu Codinome"
+                className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:border-neon-green/50 focus:ring-1 focus:ring-neon-green/50 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-bold text-sm"
+                placeholder="SEU CODINOME"
                 disabled={loading}
               />
             </div>
 
-            <div>
+            <div className="group">
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors bg-white/80 text-gray-800 placeholder-gray-500 font-bold"
-                placeholder="Telefone"
+                className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/50 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-bold text-sm"
+                placeholder="SEU TELEFONE"
                 disabled={loading}
               />
             </div>
 
-            <div>
+            <div className="group">
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-cyan-500 focus:outline-none transition-colors bg-white/80 text-gray-800 placeholder-gray-500 font-bold"
-                placeholder="Senha Secreta"
+                className="w-full px-5 py-4 rounded-2xl border border-white/10 focus:border-neon-purple/50 focus:ring-1 focus:ring-neon-purple/50 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-bold text-sm"
+                placeholder="SENHA SECRETA"
                 disabled={loading}
               />
             </div>
@@ -182,29 +184,29 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-blue-500 text-white font-black py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+              className="w-full bg-gradient-to-r from-neon-green to-emerald-600 text-black font-black py-4 rounded-2xl shadow-[0_0_20px_rgba(57,255,20,0.3)] hover:shadow-[0_0_30px_rgba(57,255,20,0.5)] transform hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg tracking-wide uppercase mt-4 border border-neon-green/20"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin mr-2" />
                   Entrando...
                 </span>
               ) : (
-                'ENTRAR / CADASTRAR 🚀'
+                'Entrar / Cadastrar 🚀'
               )}
             </button>
           </form>
 
           {/* Features - Hidden on small mobile screens to save space */}
-          <div className="space-y-4 hidden md:block">
+          <div className="space-y-3 hidden md:block pt-4 border-t border-white/10">
             {features.map((feature, index) => (
-              <div key={index} className="flex items-start space-x-3 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="flex-shrink-0 mt-0.5">
-                  {feature.icon}
+              <div key={index} className="flex items-center space-x-4 p-3 rounded-xl transition-colors hover:bg-white/5">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                  {React.cloneElement(feature.icon as any, { className: "text-gray-300" })}
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-800 text-sm">{feature.title}</h3>
-                  <p className="text-xs text-gray-600">{feature.description}</p>
+                  <h3 className="font-bold text-gray-200 text-sm">{feature.title}</h3>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wider">{feature.description}</p>
                 </div>
               </div>
             ))}

@@ -40,18 +40,18 @@ const CreateBattleModal: React.FC<CreateBattleModalProps> = ({ isOpen, onClose, 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-gray-900 border border-gray-700 max-w-md w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-dark-bg border border-white/10 max-w-md w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}
-                <div className="bg-gradient-to-r from-red-600 to-orange-600 p-6 flex items-center justify-between shrink-0">
+                <div className="bg-black/90 p-6 flex items-center justify-between shrink-0 border-b border-white/10">
                     <div className="flex items-center space-x-3">
-                        <Swords className="text-white" size={28} />
+                        <Swords className="text-neon-red" size={28} />
                         <h2 className="text-2xl font-black text-white italic uppercase tracking-wider">
                             Declarar Guerra
                         </h2>
                     </div>
-                    <button onClick={onClose} className="p-2 rounded-full bg-black/20 hover:bg-black/30 text-white transition-all">
+                    <button onClick={onClose} className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all border border-white/10">
                         <X size={24} />
                     </button>
                 </div>
@@ -71,18 +71,18 @@ const CreateBattleModal: React.FC<CreateBattleModalProps> = ({ isOpen, onClose, 
                                     value={searchQuery}
                                     onChange={(e) => handleSearch(e.target.value)}
                                     placeholder="Buscar equipe rival (ex: Iron Runners)"
-                                    className="w-full bg-gray-800 border border-gray-700 rounded-xl py-3 pl-10 pr-4 text-white focus:border-red-500 focus:outline-none placeholder-gray-500"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:border-neon-red focus:ring-1 focus:ring-neon-red/50 focus:outline-none placeholder-gray-600 transition-colors"
                                 />
                             </div>
 
-                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                            <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
                                 {searchResults.map(team => (
                                     <div
                                         key={team.id}
                                         onClick={() => { setSelectedTeam(team); setStep(1); }}
-                                        className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl cursor-pointer transition-all border border-transparent hover:border-red-500 flex items-center space-x-4"
+                                        className="bg-white/5 hover:bg-white/10 p-4 rounded-xl cursor-pointer transition-all border border-transparent hover:border-neon-red flex items-center space-x-4"
                                     >
-                                        <div className="w-12 h-12 rounded-full bg-gray-600 overflow-hidden shrink-0">
+                                        <div className="w-12 h-12 rounded-full bg-black overflow-hidden shrink-0 border border-white/10">
                                             {team.logoUrl ? <img src={team.logoUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-white">{team.name[0]}</div>}
                                         </div>
                                         <div>
@@ -100,21 +100,21 @@ const CreateBattleModal: React.FC<CreateBattleModalProps> = ({ isOpen, onClose, 
 
                     {step === 1 && selectedTeam && (
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between bg-gray-800 p-4 rounded-xl border border-gray-700">
+                            <div className="flex items-center justify-between bg-black/40 p-4 rounded-xl border border-white/10">
                                 <div className="text-center w-5/12">
-                                    <h4 className="font-black text-orange-500 text-lg">{currentTeam.name}</h4>
+                                    <h4 className="font-black text-neon-blue text-lg">{currentTeam.name}</h4>
                                 </div>
                                 <div className="text-center w-2/12">
-                                    <Swords className="text-red-500 mx-auto" size={24} />
-                                    <span className="text-xs text-gray-400 font-bold">VS</span>
+                                    <Swords className="text-neon-red mx-auto" size={24} />
+                                    <span className="text-xs text-gray-500 font-bold">VS</span>
                                 </div>
                                 <div className="text-center w-5/12">
-                                    <h4 className="font-black text-gray-200 text-lg">{selectedTeam.name}</h4>
+                                    <h4 className="font-black text-white text-lg">{selectedTeam.name}</h4>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-400 mb-3 flex items-center gap-2">
+                                <label className="block text-sm font-bold text-gray-300 mb-3 flex items-center gap-2">
                                     <Clock size={16} /> Duração da Batalha
                                 </label>
                                 <div className="grid grid-cols-3 gap-3">
@@ -122,7 +122,7 @@ const CreateBattleModal: React.FC<CreateBattleModalProps> = ({ isOpen, onClose, 
                                         <button
                                             key={h}
                                             onClick={() => setDuration(h)}
-                                            className={`py-3 rounded-lg font-bold border-2 transition-all ${duration === h ? 'bg-red-600 border-red-600 text-white' : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'}`}
+                                            className={`py-3 rounded-xl font-bold border transition-all ${duration === h ? 'bg-neon-red text-white border-neon-red shadow-[0_0_10px_rgba(255,7,58,0.4)]' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'}`}
                                         >
                                             {h === 168 ? '1 Semana' : `${h}h`}
                                         </button>
@@ -133,7 +133,7 @@ const CreateBattleModal: React.FC<CreateBattleModalProps> = ({ isOpen, onClose, 
                             <button
                                 onClick={handleCreate}
                                 disabled={loading}
-                                className="w-full bg-gradient-to-r from-red-600 to-orange-600 text-white font-black py-4 rounded-xl text-lg hover:shadow-lg hover:shadow-red-900/40 transition-all transform hover:scale-[1.02]"
+                                className="w-full bg-gradient-to-r from-neon-red to-red-600 text-white font-black py-4 rounded-xl text-lg hover:shadow-[0_0_20px_rgba(255,7,58,0.5)] transition-all transform hover:scale-[1.02] shadow-[0_0_15px_rgba(255,7,58,0.3)]"
                             >
                                 {loading ? 'Declarando Guerra...' : 'DECLARAR GUERRA'}
                             </button>

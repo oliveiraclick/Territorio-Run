@@ -77,11 +77,11 @@ export const AppShell: React.FC<AppShellProps> = ({
 
             {/* --- BOTTOM DOCK (Floating Island) --- */}
             <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 w-[95%] max-w-md">
-                <div className="bg-black/70 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] shadow-2xl flex items-center justify-between px-6 py-4 relative safe-area-pb">
+                <div className="bg-black/80 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] shadow-[0_0_30px_rgba(0,0,0,0.8)] flex items-center justify-between px-6 py-4 relative safe-area-pb">
 
                     {/* Left Actions */}
                     <div className="flex items-center gap-4">
-                        <DockButton icon={<Users size={22} />} label="Equipe" onClick={onTeamClick} active={!!user?.teamId} color="text-blue-400" />
+                        <DockButton icon={<Users size={22} />} label="Equipe" onClick={onTeamClick} active={!!user?.teamId} color="text-neon-blue" />
                         <DockButton icon={<Trophy size={22} />} label="Rank" onClick={onRankingClick} color="text-yellow-400" />
                     </div>
 
@@ -89,19 +89,19 @@ export const AppShell: React.FC<AppShellProps> = ({
                     <div className="absolute left-1/2 -top-8 transform -translate-x-1/2">
                         <button
                             onClick={isRunning ? onStopClick : onStartClick}
-                            className={`group relative w-24 h-24 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.6)] border-[6px] border-gray-900 transition-all duration-300 active:scale-95 ${isRunning
-                                ? 'bg-gradient-to-br from-red-600 to-red-500'
-                                : 'bg-gradient-to-br from-green-500 to-emerald-600' // WOW Green
+                            className={`group relative w-24 h-24 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.6)] border-[6px] border-dark-bg transition-all duration-300 active:scale-95 ${isRunning
+                                ? 'bg-gradient-to-br from-neon-red to-red-600'
+                                : 'bg-gradient-to-br from-neon-green to-emerald-600' // WOW Green
                                 }`}
                         >
                             {/* Glow Effect */}
-                            <div className={`absolute inset-0 rounded-full blur-xl opacity-50 ${isRunning ? 'bg-red-500 animate-pulse' : 'bg-green-400 animate-pulse'}`}></div>
+                            <div className={`absolute inset-0 rounded-full blur-xl opacity-60 ${isRunning ? 'bg-neon-red animate-pulse' : 'bg-neon-green animate-pulse'}`}></div>
 
                             <div className="relative z-10">
                                 {isRunning ? (
                                     <div className="w-8 h-8 rounded-md bg-white shadow-sm" />
                                 ) : (
-                                    <Zap size={40} className="text-white fill-white ml-1 drop-shadow-md group-hover:scale-110 transition-transform" />
+                                    <Zap size={40} className="text-black fill-black ml-1 drop-shadow-md group-hover:scale-110 transition-transform" />
                                     // Alternative: Standard Play Triangle
                                     // <div className="ml-2 w-0 h-0 border-t-[14px] border-t-transparent border-l-[24px] border-l-white border-b-[14px] border-b-transparent filter drop-shadow-sm" />
                                 )}
@@ -111,9 +111,9 @@ export const AppShell: React.FC<AppShellProps> = ({
 
                     {/* Right Actions */}
                     <div className="flex items-center gap-4">
-                        <DockButton icon={<HelpCircle size={22} />} label="Ajuda" onClick={onHelpClick} color="text-purple-400" />
+                        <DockButton icon={<HelpCircle size={22} />} label="Ajuda" onClick={onHelpClick} color="text-neon-purple" />
                         {user?.role === 'admin' && (
-                            <DockButton icon={<Shield size={22} />} label="Admin" onClick={() => window.location.href = '/admin'} color="text-red-500" />
+                            <DockButton icon={<Shield size={22} />} label="Admin" onClick={() => window.location.href = '/admin'} color="text-neon-red" />
                         )}
                     </div>
                 </div>
@@ -128,8 +128,8 @@ const DockButton = ({ icon, label, onClick, active = false, className = "", colo
         onClick={onClick}
         className={`flex flex-col items-center justify-center transition-all active:scale-90 group relative`}
     >
-        <div className={`p-2 rounded-2xl transition-colors ${active ? 'bg-white/10' : 'hover:bg-white/5'}`}>
-            {React.cloneElement(icon, { className: `${active ? 'text-white' : 'text-gray-400 group-hover:text-white'} transition-colors` })}
+        <div className={`p-2 rounded-2xl transition-colors ${active ? 'bg-white/10' : 'hover:bg-white/5'} ${active ? 'shadow-[0_0_10px_rgba(255,255,255,0.2)]' : ''}`}>
+            {React.cloneElement(icon, { className: `${active ? 'text-neon-green' : 'text-gray-400 group-hover:text-neon-blue'} transition-colors` })}
         </div>
         {/* <span className="text-[9px] font-bold mt-1 uppercase tracking-wider text-gray-500 group-hover:text-gray-300 transform scale-0 group-hover:scale-100 transition-transform absolute -bottom-4">{label}</span> */}
     </button>

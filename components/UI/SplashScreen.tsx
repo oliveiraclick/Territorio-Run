@@ -36,11 +36,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       <div className="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 w-64 md:w-80">
         <div className="h-1.5 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm shadow-lg">
           <div
-            className="h-full bg-gradient-to-r from-orange-400 to-yellow-400 rounded-full transition-all duration-75 ease-linear shadow-[0_0_10px_rgba(251,146,60,0.6)]"
+            className="h-full bg-gradient-to-r from-neon-green to-emerald-500 rounded-full transition-all duration-75 ease-linear shadow-[0_0_10px_rgba(57,255,20,0.6)]"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <p className="text-center text-white/80 text-[10px] mt-2 font-medium tracking-widest uppercase animate-pulse">
+        <p className="text-center text-neon-green text-[10px] mt-2 font-medium tracking-widest uppercase animate-pulse">
           Carregando Conquistas...
         </p>
       </div>

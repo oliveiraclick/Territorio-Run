@@ -89,17 +89,17 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClose, onCr
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white max-w-lg w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="bg-dark-bg max-w-lg w-full rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/10">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-orange-500 to-blue-500 p-6 flex items-center justify-between shrink-0">
+                <div className="bg-black/90 p-6 flex items-center justify-between shrink-0 border-b border-white/10">
                     <div className="flex items-center space-x-3">
-                        <Users className="text-white" size={28} />
-                        <h2 className="text-2xl font-black text-white">
+                        <Users className="text-neon-blue" size={28} />
+                        <h2 className="text-2xl font-black text-white tracking-wide">
                             {step === 3 ? 'Equipe Criada!' : 'Criar Equipe'}
                         </h2>
                     </div>
-                    <button onClick={handleClose} className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all">
+                    <button onClick={handleClose} className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all border border-white/10">
                         <X size={24} />
                     </button>
                 </div>
@@ -108,30 +108,30 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClose, onCr
                 <div className="p-6 overflow-y-auto custom-scrollbar">
                     {step === 0 && (
                         <div className="space-y-4">
-                            <h3 className="text-lg font-bold text-gray-800 border-b pb-2">Passo 1: Informações Básicas</h3>
+                            <h3 className="text-sm font-bold text-gray-400 border-b border-white/10 pb-2 uppercase tracking-wide">Passo 1: Informações Básicas</h3>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Nome da Equipe *</label>
+                                <label className="block text-sm font-bold text-gray-300 mb-2">Nome da Equipe *</label>
                                 <input
                                     type="text"
                                     value={formData.name}
                                     onChange={(e) => updateField('name', e.target.value)}
                                     placeholder="Ex: Nike Running Team"
-                                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-blue focus:ring-1 focus:ring-neon-blue/50 focus:outline-none text-white placeholder-gray-600 transition-colors"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Sobre a Equipe (Bio)</label>
+                                <label className="block text-sm font-bold text-gray-300 mb-2">Sobre a Equipe (Bio)</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => updateField('description', e.target.value)}
                                     placeholder="Conte um pouco sobre a história e objetivos da equipe..."
-                                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none h-24 resize-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-blue focus:ring-1 focus:ring-neon-blue/50 focus:outline-none h-24 resize-none text-white placeholder-gray-600 transition-colors"
                                 />
                             </div>
                             {/* Preview Slug */}
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                <div className="text-xs font-bold text-blue-600 mb-1">Seu Link será:</div>
-                                <div className="text-sm text-blue-700 font-mono overflow-hidden text-ellipsis">
+                            <div className="bg-neon-blue/5 border border-neon-blue/20 rounded-xl p-4">
+                                <div className="text-xs font-bold text-neon-blue mb-1 uppercase tracking-wide">Seu Link será:</div>
+                                <div className="text-sm text-blue-300 font-mono overflow-hidden text-ellipsis">
                                     {window.location.origin}/{formData.name ? generateSlug(formData.name!) : '...'}
                                 </div>
                             </div>
@@ -140,34 +140,34 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClose, onCr
 
                     {step === 1 && (
                         <div className="space-y-4">
-                            <h3 className="text-lg font-bold text-gray-800 border-b pb-2">Passo 2: Identidade Visual</h3>
+                            <h3 className="text-sm font-bold text-gray-400 border-b border-white/10 pb-2 uppercase tracking-wide">Passo 2: Identidade Visual</h3>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><Palette size={16} /> Cor Principal</label>
+                                <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2"><Palette size={16} /> Cor Principal</label>
                                 <input
                                     type="color"
                                     value={formData.primaryColor || '#ff9500'}
                                     onChange={(e) => updateField('primaryColor', e.target.value)}
-                                    className="w-full h-12 rounded-lg cursor-pointer"
+                                    className="w-full h-12 rounded-xl cursor-pointer bg-white/5 border border-white/10 p-1"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><Image size={16} /> Logo URL</label>
+                                <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2"><Image size={16} /> Logo URL</label>
                                 <input
                                     type="text"
                                     value={formData.logoUrl || ''}
                                     onChange={(e) => updateField('logoUrl', e.target.value)}
                                     placeholder="https://..."
-                                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-blue focus:outline-none text-white placeholder-gray-600 transition-colors"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><Image size={16} /> Banner URL</label>
+                                <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2"><Image size={16} /> Banner URL</label>
                                 <input
                                     type="text"
                                     value={formData.bannerUrl || ''}
                                     onChange={(e) => updateField('bannerUrl', e.target.value)}
                                     placeholder="https://..."
-                                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-blue focus:outline-none text-white placeholder-gray-600 transition-colors"
                                 />
                             </div>
                         </div>
@@ -175,56 +175,56 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClose, onCr
 
                     {step === 2 && (
                         <div className="space-y-4">
-                            <h3 className="text-lg font-bold text-gray-800 border-b pb-2">Passo 3: Contato & Localização</h3>
+                            <h3 className="text-sm font-bold text-gray-400 border-b border-white/10 pb-2 uppercase tracking-wide">Passo 3: Contato & Localização</h3>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><MapPin size={16} /> Endereço</label>
+                                <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2"><MapPin size={16} /> Endereço</label>
                                 <input
                                     type="text"
                                     value={formData.address || ''}
                                     onChange={(e) => updateField('address', e.target.value)}
                                     placeholder="Rua Exemplo, 123"
-                                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-blue focus:outline-none text-white placeholder-gray-600 transition-colors"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><Clock size={16} /> Horário de Funcionamento</label>
+                                <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2"><Clock size={16} /> Horário de Funcionamento</label>
                                 <input
                                     type="text"
                                     value={formData.operatingHours || ''}
                                     onChange={(e) => updateField('operatingHours', e.target.value)}
                                     placeholder="Seg-Sex: 06h às 22h"
-                                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-blue focus:outline-none text-white placeholder-gray-600 transition-colors"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><MessageCircle size={16} /> WhatsApp</label>
+                                <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2"><MessageCircle size={16} /> WhatsApp</label>
                                 <input
                                     type="text"
                                     value={formData.whatsapp || ''}
                                     onChange={(e) => updateField('whatsapp', e.target.value)}
                                     placeholder="(00) 00000-0000"
-                                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-blue focus:outline-none text-white placeholder-gray-600 transition-colors"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><Instagram size={16} /> Instagram</label>
+                                    <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2"><Instagram size={16} /> Instagram</label>
                                     <input
                                         type="text"
                                         value={formData.socialLinks?.instagram || ''}
                                         onChange={(e) => updateSocial('instagram', e.target.value)}
                                         placeholder="Link perfil"
-                                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                                        className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-blue focus:outline-none text-white placeholder-gray-600 transition-colors"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><Globe size={16} /> Site</label>
+                                    <label className="block text-sm font-bold text-gray-300 mb-2 flex items-center gap-2"><Globe size={16} /> Site</label>
                                     <input
                                         type="text"
                                         value={formData.socialLinks?.website || ''}
                                         onChange={(e) => updateSocial('website', e.target.value)}
                                         placeholder="Link site"
-                                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-blue-500 focus:outline-none"
+                                        className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:border-neon-blue focus:outline-none text-white placeholder-gray-600 transition-colors"
                                     />
                                 </div>
                             </div>
@@ -233,24 +233,24 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClose, onCr
 
                     {step === 3 && (
                         <div className="text-center py-4">
-                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Check size={32} className="text-green-600" />
+                            <div className="w-16 h-16 bg-neon-green/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-neon-green/20">
+                                <Check size={32} className="text-neon-green" />
                             </div>
-                            <h3 className="text-xl font-black text-gray-800 mb-2">
+                            <h3 className="text-xl font-black text-white mb-2">
                                 Equipe "{formData.name}" criada!
                             </h3>
-                            <p className="text-sm text-gray-600 mb-6">
+                            <p className="text-sm text-gray-400 mb-6">
                                 Compartilhe o link abaixo com seus atletas
                             </p>
 
-                            <div className="bg-gradient-to-br from-orange-50 to-blue-50 border-2 border-blue-300 rounded-xl p-4 mb-4">
-                                <div className="text-xs font-bold text-gray-700 mb-2">Link de Convite:</div>
-                                <div className="bg-white rounded-lg p-3 mb-3 break-all">
-                                    <span className="text-sm text-blue-600 font-mono">{inviteLink}</span>
+                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4">
+                                <div className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Link de Convite:</div>
+                                <div className="bg-black/50 rounded-lg p-3 mb-3 break-all border border-white/5">
+                                    <span className="text-sm text-neon-blue font-mono">{inviteLink}</span>
                                 </div>
                                 <button
                                     onClick={handleCopyLink}
-                                    className={`w-full flex items-center justify-center space-x-2 py-3 rounded-lg font-bold transition-all ${copied ? 'bg-green-500 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
+                                    className={`w-full flex items-center justify-center space-x-2 py-3 rounded-xl font-bold transition-all ${copied ? 'bg-neon-green text-black' : 'bg-neon-blue text-black hover:bg-cyan-400'}`}
                                 >
                                     {copied ? <><Check size={18} /><span>Copiado!</span></> : <><Copy size={18} /><span>Copiar Link</span></>}
                                 </button>
@@ -261,11 +261,11 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClose, onCr
 
                 {/* Footer Buttons */}
                 {step < 3 && (
-                    <div className="p-6 bg-gray-50 border-t flex justify-between shrink-0">
+                    <div className="p-6 bg-black/40 border-t border-white/10 flex justify-between shrink-0">
                         {step > 0 ? (
                             <button
                                 onClick={() => setStep(step - 1)}
-                                className="flex items-center space-x-2 text-gray-600 font-bold hover:text-gray-800 px-4 py-2"
+                                className="flex items-center space-x-2 text-gray-500 font-bold hover:text-white px-4 py-2 transition-colors"
                             >
                                 <ChevronLeft size={20} /> <span>Voltar</span>
                             </button>
@@ -275,7 +275,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClose, onCr
                             <button
                                 onClick={() => setStep(step + 1)}
                                 disabled={!formData.name?.trim()}
-                                className="bg-blue-600 text-white font-bold px-6 py-3 rounded-xl flex items-center space-x-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="bg-neon-blue text-black font-bold px-6 py-3 rounded-xl flex items-center space-x-2 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(0,243,255,0.3)] transition-all"
                             >
                                 <span>Próximo</span> <ChevronRight size={20} />
                             </button>
@@ -283,7 +283,7 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClose, onCr
                             <button
                                 onClick={handleCreate}
                                 disabled={loading}
-                                className="bg-gradient-to-r from-orange-500 to-blue-500 text-white font-bold px-8 py-3 rounded-xl hover:shadow-lg disabled:opacity-50"
+                                className="bg-gradient-to-r from-neon-green to-emerald-600 text-black font-bold px-8 py-3 rounded-xl hover:shadow-[0_0_20px_rgba(57,255,20,0.5)] disabled:opacity-50 shadow-[0_0_15px_rgba(57,255,20,0.3)] transition-all"
                             >
                                 {loading ? 'Criando...' : 'Concluir Criação'}
                             </button>
@@ -291,8 +291,8 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClose, onCr
                     </div>
                 )}
                 {step === 3 && (
-                    <div className="p-6 bg-gray-50 border-t shrink-0">
-                        <button onClick={handleClose} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-xl transition-all">
+                    <div className="p-6 bg-black/40 border-t border-white/10 shrink-0">
+                        <button onClick={handleClose} className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition-all border border-white/10">
                             Fechar
                         </button>
                     </div>
