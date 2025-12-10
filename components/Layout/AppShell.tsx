@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Menu, Trophy, HelpCircle, Map, Users, Shield } from 'lucide-react';
+import { User, Menu, Trophy, HelpCircle, Map, Users, Shield, Zap } from 'lucide-react';
 
 interface AppShellProps {
     children: React.ReactNode; // The map or main content
@@ -31,38 +31,41 @@ export const AppShell: React.FC<AppShellProps> = ({
     navContent
 }) => {
     return (
-        <div className="relative h-screen w-full overflow-hidden bg-gray-900 select-none touch-none">
-            {/* --- TOP BAR --- */}
-            <div className="absolute top-0 left-0 right-0 h-safe-top z-40 pointer-events-none">
-                {/* Status Bar Spacer (optional, depending on meta tags) */}
-            </div>
+        <div className="relative h-screen w-full overflow-hidden bg-gray-900 select-none touch-none font-sans">
+            {/* --- TOP BAR (Floating Pills) --- */}
+            <div className="absolute top-0 left-0 right-0 h-safe-top z-40 pointer-events-none"></div>
 
             <div className="absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-auto">
-                {/* Profile Profile */}
+                {/* Profile Pill */}
                 <button
                     onClick={onProfileClick}
-                    className="flex items-center space-x-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full pl-1 pr-4 py-1 shadow-lg active:scale-95 transition-transform"
+                    className="group flex items-center space-x-2 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full py-1.5 pl-1.5 pr-4 shadow-lg hover:bg-black/80 hover:scale-105 transition-all"
                 >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-blue-500 flex items-center justify-center border-2 border-white/20">
-                        {user?.avatar ? <img src={user.avatar} className="w-full h-full rounded-full object-cover" /> : <span className="font-bold text-white text-xs">{user?.name?.charAt(0).toUpperCase()}</span>}
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-purple-600 p-0.5">
+                        <div className="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden">
+                            {user?.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : <span className="font-black text-white text-xs">{user?.name?.charAt(0).toUpperCase()}</span>}
+                        </div>
                     </div>
-                    <span className="text-white text-xs font-bold max-w-[80px] truncate">{user?.name || 'Guerreiro'}</span>
+                    <div>
+                        <span className="block text-white text-xs font-bold leading-none max-w-[80px] truncate">{user?.name || 'Agente'}</span>
+                        <span className="text-[10px] text-gray-400 font-medium leading-none">Nível {Math.floor(stars / 100) + 1}</span>
+                    </div>
                 </button>
 
-                {/* Stars / Level */}
-                <div className="flex items-center space-x-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-yellow-500/30">
-                    <span className="text-yellow-400 text-sm">⭐</span>
-                    <span className="text-white font-black font-mono">{stars}</span>
+                {/* Stars Pill (Center) */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 top-2 flex items-center space-x-1.5 bg-black/60 backdrop-blur-xl px-4 py-1.5 rounded-full border border-yellow-500/20 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                    <span className="text-yellow-400 text-sm animate-pulse">⭐</span>
+                    <span className="text-white font-black font-mono text-sm tracking-wide">{stars}</span>
                 </div>
 
-                {/* Right Action (Menu or Filter) */}
+                {/* Menu Button */}
                 <div className="flex items-center gap-2">
                     {navContent}
                     <button
                         onClick={onMenuClick}
-                        className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform"
+                        className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white shadow-lg active:scale-90 hover:bg-white/10 transition-all"
                     >
-                        <Menu size={20} />
+                        <Menu size={22} className="text-gray-200" />
                     </button>
                 </div>
             </div>
@@ -72,57 +75,62 @@ export const AppShell: React.FC<AppShellProps> = ({
                 {children}
             </div>
 
-            {/* --- BOTTOM DOCK --- */}
-            <div className="absolute bottom-6 left-4 right-4 z-30 h-20 bg-black/80 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl flex items-center px-2 justify-between safe-area-pb">
+            {/* --- BOTTOM DOCK (Floating Island) --- */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 w-[95%] max-w-md">
+                <div className="bg-black/70 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] shadow-2xl flex items-center justify-between px-6 py-4 relative safe-area-pb">
 
-                {/* Left Actions */}
-                <div className="flex items-center gap-1 w-1/3 justify-center">
-                    <DockButton icon={<Users size={20} />} label="Equipe" onClick={onTeamClick} active={!!user?.teamId} />
-                    <DockButton icon={<Trophy size={20} />} label="Ranking" onClick={onRankingClick} />
-                </div>
+                    {/* Left Actions */}
+                    <div className="flex items-center gap-4">
+                        <DockButton icon={<Users size={22} />} label="Equipe" onClick={onTeamClick} active={!!user?.teamId} color="text-blue-400" />
+                        <DockButton icon={<Trophy size={22} />} label="Rank" onClick={onRankingClick} color="text-yellow-400" />
+                    </div>
 
-                {/* CENTRAL ACTION BUTTON (START/STOP) */}
-                <div className="relative -top-6">
-                    <button
-                        onClick={isRunning ? onStopClick : onStartClick}
-                        className={`w-20 h-20 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.5)] border-4 border-gray-900 transition-all active:scale-95 ${isRunning
-                                ? 'bg-red-600 text-white animate-pulse'
-                                : 'bg-green-500 text-black hover:bg-green-400'
-                            }`}
-                    >
-                        {isRunning ? (
-                            <div className="w-8 h-8 rounded-sm bg-white" />
-                        ) : (
-                            <div className="ml-1 w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-black border-b-[12px] border-b-transparent" />
+                    {/* CENTRAL PLAY BUTTON */}
+                    <div className="absolute left-1/2 -top-8 transform -translate-x-1/2">
+                        <button
+                            onClick={isRunning ? onStopClick : onStartClick}
+                            className={`group relative w-24 h-24 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.6)] border-[6px] border-gray-900 transition-all duration-300 active:scale-95 ${isRunning
+                                ? 'bg-gradient-to-br from-red-600 to-red-500'
+                                : 'bg-gradient-to-br from-green-500 to-emerald-600' // WOW Green
+                                }`}
+                        >
+                            {/* Glow Effect */}
+                            <div className={`absolute inset-0 rounded-full blur-xl opacity-50 ${isRunning ? 'bg-red-500 animate-pulse' : 'bg-green-400 animate-pulse'}`}></div>
+
+                            <div className="relative z-10">
+                                {isRunning ? (
+                                    <div className="w-8 h-8 rounded-md bg-white shadow-sm" />
+                                ) : (
+                                    <Zap size={40} className="text-white fill-white ml-1 drop-shadow-md group-hover:scale-110 transition-transform" />
+                                    // Alternative: Standard Play Triangle
+                                    // <div className="ml-2 w-0 h-0 border-t-[14px] border-t-transparent border-l-[24px] border-l-white border-b-[14px] border-b-transparent filter drop-shadow-sm" />
+                                )}
+                            </div>
+                        </button>
+                    </div>
+
+                    {/* Right Actions */}
+                    <div className="flex items-center gap-4">
+                        <DockButton icon={<HelpCircle size={22} />} label="Ajuda" onClick={onHelpClick} color="text-purple-400" />
+                        {user?.role === 'admin' && (
+                            <DockButton icon={<Shield size={22} />} label="Admin" onClick={() => window.location.href = '/admin'} color="text-red-500" />
                         )}
-                    </button>
-                    {isRunning && (
-                        <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                            <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-black/50 px-2 rounded">Em Curso</span>
-                        </div>
-                    )}
+                    </div>
                 </div>
-
-                {/* Right Actions */}
-                <div className="flex items-center gap-1 w-1/3 justify-center">
-                    <DockButton icon={<HelpCircle size={20} />} label="Ajuda" onClick={onHelpClick} />
-                    {user?.role === 'admin' && (
-                        <DockButton icon={<Shield size={20} />} label="Admin" onClick={() => window.location.href = '/admin'} className="text-red-400" />
-                    )}
-                </div>
-
             </div>
         </div>
     );
 };
 
 // Helper Subcomponent
-const DockButton = ({ icon, label, onClick, active = false, className = "" }: any) => (
+const DockButton = ({ icon, label, onClick, active = false, className = "", color = "text-white" }: any) => (
     <button
         onClick={onClick}
-        className={`flex flex-col items-center justify-center w-14 h-14 rounded-2xl transition-all active:scale-90 ${active ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'} ${className}`}
+        className={`flex flex-col items-center justify-center transition-all active:scale-90 group relative`}
     >
-        {icon}
-        <span className="text-[9px] font-bold mt-1 uppercase tracking-wider">{label}</span>
+        <div className={`p-2 rounded-2xl transition-colors ${active ? 'bg-white/10' : 'hover:bg-white/5'}`}>
+            {React.cloneElement(icon, { className: `${active ? 'text-white' : 'text-gray-400 group-hover:text-white'} transition-colors` })}
+        </div>
+        {/* <span className="text-[9px] font-bold mt-1 uppercase tracking-wider text-gray-500 group-hover:text-gray-300 transform scale-0 group-hover:scale-100 transition-transform absolute -bottom-4">{label}</span> */}
     </button>
 );

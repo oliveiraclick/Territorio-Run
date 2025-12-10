@@ -1,8 +1,7 @@
 import React from 'react';
 import { User, Territory } from '../../types';
 import { calculateLevel } from '../../utils/starSystem';
-import { getRequiredDistance } from '../../utils/territoryUtils';
-import { Star, MapPin, TrendingUp, Award, X, LogOut, Lock, Target, History, Users } from 'lucide-react';
+import { Star, MapPin, TrendingUp, Award, X, LogOut, Lock, History, Users } from 'lucide-react';
 
 interface ProfileScreenProps {
     user: User;
@@ -44,309 +43,156 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
     const myTerritories = territories.filter(t => t.ownerId === user.id);
     const totalTerritories = myTerritories.length;
-    const territoriesLost = 0;
-    const avgDistancePerTerritory = totalTerritories > 0
-        ? (totalDistance / totalTerritories).toFixed(2)
-        : '0.00';
     const level = calculateLevel(totalStars);
 
-    const stats = [
-        {
-            icon: <TrendingUp className="text-blue-500" size={24} />,
-            label: 'Distância Total',
-            value: totalDistance.toFixed(2),
-            unit: 'km',
-            color: 'from-blue-500 to-cyan-400',
-        },
-        {
-            icon: <MapPin className="text-orange-500" size={24} />,
-            label: 'Territórios Conquistados',
-            value: totalTerritories.toString(),
-            unit: 'territórios',
-            color: 'from-orange-500 to-red-400',
-        },
-        {
-            icon: <Award className="text-purple-500" size={24} />,
-            label: 'Média por Território',
-            value: avgDistancePerTerritory,
-            unit: 'km/território',
-            color: 'from-purple-500 to-pink-500',
-        },
-        {
-            icon: <Star className="text-yellow-500 fill-yellow-500" size={24} />,
-            label: 'Estrelas Totais',
-            value: totalStars.toString(),
-            unit: 'estrelas',
-            color: 'from-yellow-400 to-orange-400',
-        },
-    ];
-
     return (
-        <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-lg flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white max-w-2xl w-full rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-[10000] bg-white text-gray-900 overflow-y-auto animate-in slide-in-from-bottom duration-300"> {/* FORCE TOP VISIBILITY */}
 
-                {/* Header */}
-                <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-blue-500 p-6 flex items-center justify-between z-10 rounded-t-2xl">
-                    <div className="flex items-center space-x-4">
-                        <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-lg">
-                            <span className="text-3xl font-black text-orange-500">{user.name.charAt(0).toUpperCase()}</span>
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-black text-white">{user.name}</h1>
-                            <div className="flex items-center space-x-2 mt-1">
-                                <div className="flex items-center space-x-1 bg-white/20 px-2 py-0.5 rounded-full">
-                                    <Star size={12} className="text-yellow-300 fill-yellow-300" />
-                                    <span className="text-xs font-bold text-white">Nível {level}</span>
-                                </div>
-                                <span className="text-xs text-white/80">
-                                    Membro desde {new Date(user.joinedAt).toLocaleDateString('pt-BR')}
-                                </span>
-                            </div>
+            {/* Header / Top Bar for Profile */}
+            <div className="relative h-48 bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-6 rounded-b-[3rem] shadow-xl z-10 transition-all">
+                <button
+                    onClick={onClose}
+                    className="absolute top-6 right-6 w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
+                    <X size={20} />
+                </button>
+
+                <div className="flex flex-col items-center">
+                    <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-orange-500 to-blue-500 shadow-2xl mb-3">
+                        <div className="w-full h-full rounded-full bg-gray-900 overflow-hidden border-4 border-gray-900 flex items-center justify-center">
+                            {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : <Users size={40} className="text-gray-400" />}
                         </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <button
-                            onClick={() => setShowAdminLogin(!showAdminLogin)}
-                            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-all"
-                        >
+                    <h2 className="text-2xl font-black text-white tracking-wide">{user.name}</h2>
+                    <div className="flex items-center space-x-2 mt-1">
+                        <span className="text-yellow-400 font-bold flex items-center text-sm"><Star size={14} className="mr-1 fill-yellow-400" /> Nível {level}</span>
+                        <span className="text-gray-500 text-xs">•</span>
+                        <span className="text-gray-400 text-xs">Membro desde {new Date().toLocaleDateString()}</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Content Container */}
+            <div className="relative px-4 -mt-10 z-20 pb-20"> {/* Negative margin to pull up */}
+
+                {/* Actions Grid */}
+                <div className="bg-white rounded-3xl shadow-xl p-4 mb-6 flex items-center justify-between border border-gray-100">
+                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onClick={() => setShowAdminLogin(!showAdminLogin)}>
+                        <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-600 mb-1">
                             <Lock size={20} />
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all"
-                        >
-                            <X size={24} />
-                        </button>
+                        </div>
+                        <span className="text-[10px] font-bold text-gray-500">ADMIN</span>
+                    </div>
+                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onClick={onCreateTeam}>
+                        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-1">
+                            <Users size={20} />
+                        </div>
+                        <span className="text-[10px] font-bold text-gray-500">EQUIPE</span>
+                    </div>
+                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onClick={onViewTeam}>
+                        <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 mb-1">
+                            <Award size={20} />
+                        </div>
+                        <span className="text-[10px] font-bold text-gray-500">RANKING</span>
+                    </div>
+                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onClick={onLogout}>
+                        <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mb-1">
+                            <LogOut size={20} />
+                        </div>
+                        <span className="text-[10px] font-bold text-gray-500">SAIR</span>
                     </div>
                 </div>
 
-                {/* Admin Login Modal (Inline) */}
                 {showAdminLogin && (
-                    <div className="bg-gray-100 p-4 border-b border-gray-200 animate-fade-in">
-                        <div className="flex items-center space-x-2">
-                            <input
-                                type="password"
-                                placeholder="Senha de Admin"
-                                value={adminPassword}
-                                onChange={(e) => setAdminPassword(e.target.value)}
-                                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
-                            />
-                            <button
-                                onClick={handleAdminLogin}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors"
-                            >
-                                Acessar
-                            </button>
-                        </div>
+                    <div className="mb-6 p-4 bg-gray-100 rounded-xl flex animate-pulse">
+                        <input
+                            type="password"
+                            placeholder="Senha de acesso"
+                            className="flex-1 bg-white border border-gray-200 rounded-l-lg px-4 py-2 text-sm outline-none"
+                            value={adminPassword}
+                            onChange={(e) => setAdminPassword(e.target.value)}
+                        />
+                        <button onClick={handleAdminLogin} className="bg-orange-500 text-white px-4 rounded-r-lg font-bold text-sm">ENTRAR</button>
                     </div>
                 )}
 
-                <div className="p-6 pb-32 space-y-6 bg-gradient-to-br from-orange-50 via-blue-50 to-cyan-50">
+                <div className="space-y-6">
 
                     {/* Estatísticas Principais */}
                     <section>
-                        <h2 className="text-xl font-black text-gray-800 mb-4">📊 Estatísticas</h2>
+                        <h3 className="text-gray-800 font-bold text-lg mb-4 flex items-center gap-2">
+                            <TrendingUp size={20} className="text-blue-500" />
+                            Estatísticas
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
+                                <span className="text-3xl font-black text-gray-800">{totalTerritories}</span>
+                                <span className="text-xs uppercase text-gray-400 font-bold mt-1">Territórios</span>
+                            </div>
+                            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
+                                <span className="text-3xl font-black text-gray-800">{totalDistance.toFixed(1)}</span>
+                                <span className="text-xs uppercase text-gray-400 font-bold mt-1">KM Corridos</span>
+                            </div>
+                        </div>
+                    </section>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {stats.map((stat, index) => (
-                                <div
-                                    key={index}
-                                    className="bg-white p-5 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all"
-                                >
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className={`p-2 rounded-lg bg-gradient-to-br ${stat.color} bg-opacity-10`}>
-                                            {stat.icon}
-                                        </div>
-                                    </div>
-                                    <div className="text-sm text-gray-600 mb-1">{stat.label}</div>
-                                    <div className="flex items-baseline space-x-2">
-                                        <span className="text-3xl font-black text-gray-800">{stat.value}</span>
-                                        <span className="text-sm text-gray-500">{stat.unit}</span>
-                                    </div>
+                    {/* Achievements Scroll */}
+                    <section>
+                        <h3 className="text-gray-800 font-bold text-lg mb-4 flex items-center gap-2">
+                            <Award size={20} className="text-yellow-500" />
+                            Conquistas
+                        </h3>
+                        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+                            {[
+                                { name: 'Iniciante', icon: '🏁', color: 'bg-green-100 text-green-600', active: true },
+                                { name: 'Explorador', icon: '🌍', color: 'bg-blue-100 text-blue-600', active: totalTerritories >= 5 },
+                                { name: 'Conquistador', icon: '👑', color: 'bg-orange-100 text-orange-600', active: totalTerritories >= 10 },
+                                { name: 'Lenda', icon: '🔥', color: 'bg-red-100 text-red-600', active: level >= 10 },
+                            ].map((ach, i) => (
+                                <div key={i} className={`flex-shrink-0 w-28 h-32 rounded-2xl flex flex-col items-center justify-center p-2 text-center border-2 ${ach.active ? 'border-transparent ' + ach.color : 'border-gray-100 bg-gray-50 opacity-40 grayscale'}`}>
+                                    <span className="text-4xl mb-2">{ach.icon}</span>
+                                    <span className="text-xs font-bold leading-tight">{ach.name}</span>
                                 </div>
                             ))}
                         </div>
                     </section>
 
-                    {/* Análise Detalhada */}
-                    <section>
-                        <h2 className="text-xl font-black text-blue-600 mb-4">📈 Análise Detalhada</h2>
+                    {/* Territórios Lista */}
+                    <section className="pb-20">
+                        <h3 className="text-gray-800 font-bold text-lg mb-4 flex items-center gap-2">
+                            <MapPin size={20} className="text-orange-500" />
+                            Meus Territórios
+                        </h3>
 
                         <div className="space-y-3">
-                            <div className="bg-white p-4 rounded-xl shadow-md border border-gray-100">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm text-gray-600">Taxa de Conquista</span>
-                                    <span className="text-lg font-bold text-green-600">
-                                        {totalTerritories > 0 ? '100%' : '0%'}
-                                    </span>
-                                </div>
-                                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-green-500 to-green-400"
-                                        style={{ width: totalTerritories > 0 ? '100%' : '0%' }}
-                                    />
-                                </div>
-                                <div className="text-xs text-gray-500 mt-2">
-                                    {totalTerritories} conquistados • {territoriesLost} perdidos
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-4 rounded-xl shadow-md border border-gray-100">
-                                <div className="text-sm text-gray-600 mb-2">Eficiência de Corrida</div>
-                                <div className="text-2xl font-black text-gray-800 mb-1">
-                                    {avgDistancePerTerritory} km
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                    Média de distância por território conquistado
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Seção de Equipe */}
-                    <section>
-                        <h2 className="text-xl font-black text-gray-800 mb-4">👥 Equipe</h2>
-                        {user.teamId ? (
-                            <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 rounded-xl shadow-md text-white">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div>
-                                        <div className="text-sm opacity-90">Você faz parte de:</div>
-                                        <div className="text-xl font-black">{user.teamName}</div>
-                                        <div className="text-xs opacity-75 mt-1">
-                                            {user.role === 'owner' ? '👑 Dono da Equipe' : '🏃 Membro'}
+                            {myTerritories.map(t => (
+                                <button
+                                    key={t.id}
+                                    onClick={() => onTerritoryClick && onTerritoryClick(t.id)}
+                                    className="w-full bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:bg-gray-50 active:scale-95 transition-all text-left group"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg">📍</div>
+                                        <div>
+                                            <h4 className="font-bold text-gray-800 group-hover:text-orange-500 transition-colors">{t.name}</h4>
+                                            <span className="text-xs text-gray-400">{new Date(t.conqueredAt).toLocaleDateString()} • {t.area}m²</span>
                                         </div>
                                     </div>
-                                    <Users size={32} className="opacity-80" />
-                                </div>
-                                <button
-                                    onClick={onViewTeam}
-                                    className="w-full bg-white text-purple-600 font-bold py-2 rounded-lg hover:bg-gray-100 transition-all"
-                                >
-                                    Ver Painel da Equipe
+                                    <div className="flex flex-col items-end">
+                                        <span className="font-black text-orange-500">{t.value} ⭐</span>
+                                        <span className="text-[10px] text-gray-300">VER NO MAPA</span>
+                                    </div>
                                 </button>
-                            </div>
-                        ) : (
-                            <div className="bg-white p-4 rounded-xl shadow-md border-2 border-dashed border-gray-300">
-                                <div className="text-center py-4">
-                                    <Users size={48} className="mx-auto mb-3 text-gray-400" />
-                                    <p className="text-gray-600 mb-4">Você ainda não faz parte de uma equipe</p>
-                                    <button
-                                        onClick={onCreateTeam}
-                                        className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg transition-all"
-                                    >
-                                        Criar Minha Equipe
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </section>
-
-                    {/* Territórios Recentes */}
-                    <section>
-                        <h2 className="text-xl font-black text-purple-600 mb-4">🗺️ Territórios Recentes</h2>
-
-                        {myTerritories.length === 0 ? (
-                            <div className="bg-white p-8 rounded-xl shadow-md border border-gray-100 text-center">
-                                <MapPin size={48} className="text-gray-400 mx-auto mb-3" />
-                                <p className="text-gray-600">Nenhum território conquistado ainda</p>
-                                <p className="text-sm text-gray-500 mt-1">Inicie uma corrida para conquistar seu primeiro território!</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-2 max-h-64 overflow-y-auto">
-                                {myTerritories
-                                    .sort((a, b) => b.conqueredAt - a.conqueredAt)
-                                    .slice(0, 10)
-                                    .map((territory) => (
-                                        <div
-                                            key={territory.id}
-                                            onClick={() => onTerritoryClick?.(territory.id)}
-                                            className="bg-white p-3 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-300 transition-all cursor-pointer"
-                                        >
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center space-x-3">
-                                                    <div
-                                                        className="w-3 h-3 rounded-full"
-                                                        style={{ backgroundColor: territory.color }}
-                                                    />
-                                                    <div>
-                                                        <div className="font-bold text-gray-800 text-sm">{territory.name}</div>
-                                                        <div className="text-xs text-gray-500">
-                                                            {new Date(territory.conqueredAt).toLocaleDateString('pt-BR')} às{' '}
-                                                            {new Date(territory.conqueredAt).toLocaleTimeString('pt-BR', {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit'
-                                                            })}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="text-sm font-bold text-orange-500">{territory.value} pts</div>
-                                                </div>
-                                            </div>
-
-                                            {/* Informações de Conquista */}
-                                            <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
-                                                <div className="flex items-center space-x-3">
-                                                    {territory.conquestCount && territory.conquestCount > 0 && (
-                                                        <div className="flex items-center space-x-1">
-                                                            <Target size={12} className="text-red-500" />
-                                                            <span>Conquistado {territory.conquestCount}x</span>
-                                                        </div>
-                                                    )}
-                                                    {territory.previousOwnerName && (
-                                                        <div className="flex items-center space-x-1">
-                                                            <History size={12} className="text-blue-500" />
-                                                            <span>De: {territory.previousOwnerName}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                {territory.originalDistance && (
-                                                    <div className="text-xs font-semibold text-gray-600">
-                                                        {territory.originalDistance.toFixed(2)} km
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                            </div>
-                        )}
-                    </section>
-
-                    {/* Conquistas */}
-                    <section>
-                        <h2 className="text-xl font-black text-yellow-600 mb-4">🏆 Conquistas</h2>
-
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {[
-                                { name: 'Primeira Conquista', achieved: totalTerritories >= 1, icon: '🎯' },
-                                { name: 'Explorador', achieved: totalTerritories >= 5, icon: '🗺️' },
-                                { name: 'Maratonista', achieved: totalDistance >= 10, icon: '🏃' },
-                                { name: 'Conquistador', achieved: totalTerritories >= 10, icon: '👑' },
-                                { name: 'Estrela Cadente', achieved: totalStars >= 500, icon: '⭐' },
-                                { name: 'Lenda', achieved: level >= 10, icon: '🔥' },
-                            ].map((achievement, index) => (
-                                <div
-                                    key={index}
-                                    className={`p-3 rounded-lg border ${achievement.achieved
-                                        ? 'bg-yellow-50 border-yellow-300 shadow-sm'
-                                        : 'bg-gray-50 border-gray-200 opacity-50'
-                                        } text-center`}
-                                >
-                                    <div className="text-2xl mb-1">{achievement.icon}</div>
-                                    <div className="text-xs font-bold text-gray-700">{achievement.name}</div>
-                                </div>
                             ))}
+                            {myTerritories.length === 0 && (
+                                <div className="text-center py-8 opacity-50 border-2 border-dashed border-gray-200 rounded-xl">
+                                    <MapPin size={32} className="mx-auto mb-2 text-gray-300" />
+                                    <p className="text-sm font-bold text-gray-400">Nenhum território conquistado.</p>
+                                </div>
+                            )}
                         </div>
                     </section>
 
-                    {/* Botão de Logout */}
-                    <button
-                        onClick={onLogout}
-                        className="w-full bg-red-50 hover:bg-red-500 text-red-600 hover:text-white font-bold py-4 rounded-xl border-2 border-red-500 transition-all flex items-center justify-center space-x-2 shadow-sm hover:shadow-md"
-                    >
-                        <LogOut size={20} />
-                        <span>Sair da Conta</span>
-                    </button>
                 </div>
             </div>
         </div>
