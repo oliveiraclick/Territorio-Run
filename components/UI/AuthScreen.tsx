@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, MapPin, Trophy, TrendingUp, Users, Briefcase, Building } from 'lucide-react';
+import { Zap, MapPin, Trophy, TrendingUp, Users, Briefcase, Building, Eye, EyeOff } from 'lucide-react';
 import { Team, TeamMember } from '../../types';
 import { getTeamBySlug, getTeamRanking } from '../../services/teamService';
 import TeamLandingPage from '../Team/TeamLandingPage';
@@ -10,6 +10,7 @@ interface AuthScreenProps {
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
   const [isBusiness, setIsBusiness] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -124,7 +125,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
             <img
               src="/brand-logo-login.png"
               alt="Territory Run"
-              className="h-[60px] w-auto object-contain drop-shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-transform hover:scale-105 duration-500"
+              className="h-56 w-auto object-contain drop-shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-transform hover:scale-105 duration-500"
             />
           </div>
 
@@ -134,14 +135,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
               <button
                 type="button"
                 onClick={() => setIsBusiness(false)}
-                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${!isBusiness ? 'bg-gold-500 text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${!isBusiness ? 'bg-yellow-500 text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 Sou Atleta
               </button>
               <button
                 type="button"
                 onClick={() => setIsBusiness(true)}
-                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${isBusiness ? 'bg-gold-500 text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${isBusiness ? 'bg-yellow-500 text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 Sou Assessoria
               </button>
@@ -248,20 +249,30 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
 
             <div className="group">
               <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1 ml-2">Senha Secreta</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm"
-                placeholder="••••••••"
-                disabled={loading}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm pr-12"
+                  placeholder="••••••••"
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-3.5 text-gray-500 hover:text-white transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all group ${loading ? 'bg-gray-700 cursor-not-allowed text-gray-500' : 'bg-gold-500 hover:bg-gold-400 text-black shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.5)]'}`}
+              className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all group ${loading ? 'bg-gray-700 cursor-not-allowed text-gray-500' : 'bg-yellow-500 hover:bg-yellow-400 text-black shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.5)]'}`}
             >
               {loading ? (
                 <span>Carregando...</span>

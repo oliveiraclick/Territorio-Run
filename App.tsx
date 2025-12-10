@@ -12,6 +12,7 @@ import TeamDashboard from './components/Team/TeamDashboard';
 import CreateChallengeModal from './components/Team/CreateChallengeModal';
 import ActivityModeSelector from './components/UI/ActivityModeSelector';
 import { GameRules } from './components/UI/GameRules';
+import { LeaderboardModal } from './components/UI/LeaderboardModal';
 
 import { StarBar } from './components/UI/StarBar';
 import { RunMetrics } from './components/UI/RunMetrics';
@@ -76,6 +77,7 @@ export default function App() {
   const [showTeamDashboard, setShowTeamDashboard] = useState(false);
   const [showCreateChallenge, setShowCreateChallenge] = useState(false);
   const [pendingChallenge, setPendingChallenge] = useState<Partial<Challenge> | null>(null);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   // Estados para modalidade de atividade
   const [showActivitySelector, setShowActivitySelector] = useState(false);
@@ -125,6 +127,11 @@ export default function App() {
 
         localStorage.setItem('territory_user_session', JSON.stringify(user));
         setCurrentUser(user);
+
+        // Auto-open create team for owners without team
+        if (user.role === 'owner' && !user.teamId) {
+          setShowCreateTeam(true);
+        }
       } else {
         alert("Erro ao conectar com o servidor. Tente novamente.");
       }
@@ -584,7 +591,7 @@ export default function App() {
       onStartClick={handleStart}
       onStopClick={handleStop}
       onTeamClick={() => currentUser?.teamId ? setShowTeamDashboard(true) : setShowCreateTeam(true)}
-      onRankingClick={() => setShowTeamDashboard(true)} // Or dedicated ranking
+      onRankingClick={() => setShowLeaderboard(true)}
       onHelpClick={() => setShowGameRules(true)}
       navContent={
         <div className="pointer-events-auto">
@@ -623,42 +630,48 @@ export default function App() {
       </div>
 
       {/* Error Toast */}
-      {locationError && (
-        <div className="absolute top-28 left-4 right-4 z-50 bg-red-900/90 border border-red-500 text-white p-3 rounded-xl flex items-center space-x-3 backdrop-blur-md shadow-lg animate-fade-in-down">
-          <AlertTriangle className="text-red-300" size={16} />
-          <span className="text-xs font-bold">{locationError}</span>
-        </div>
-      )}
+      {
+        locationError && (
+          <div className="absolute top-28 left-4 right-4 z-50 bg-red-900/90 border border-red-500 text-white p-3 rounded-xl flex items-center space-x-3 backdrop-blur-md shadow-lg animate-fade-in-down">
+            <AlertTriangle className="text-red-300" size={16} />
+            <span className="text-xs font-bold">{locationError}</span>
+          </div>
+        )
+      }
 
       {/* Run Metrics (Dynamic Island Style) */}
-      {isRunning && (
-        <div className="absolute bottom-28 left-4 right-4 z-20 flex justify-center pointer-events-none">
-          {/* Using existing RunMetrics but maybe simplified? Keeping as is for now */}
-          <RunMetrics
-            coordinates={currentPath}
-            distance={distance}
-            startTime={runStartTime}
-            isRunning={isRunning}
-          />
-        </div>
-      )}
+      {
+        isRunning && (
+          <div className="absolute bottom-28 left-4 right-4 z-20 flex justify-center pointer-events-none">
+            {/* Using existing RunMetrics but maybe simplified? Keeping as is for now */}
+            <RunMetrics
+              coordinates={currentPath}
+              distance={distance}
+              startTime={runStartTime}
+              isRunning={isRunning}
+            />
+          </div>
+        )
+      }
 
       {/* Stats Panel (Summary) */}
-      {!isRunning && (
-        <div className="absolute bottom-28 left-4 z-20 pointer-events-none">
-          <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-3 flex items-center gap-4">
-            <div>
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Distância Total</div>
-              <div className="text-lg font-black text-white">{distance.toFixed(2)} <span className="text-xs text-gray-500">km</span></div>
-            </div>
-            <div className="h-8 w-px bg-white/10"></div>
-            <div>
-              <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Territórios</div>
-              <div className="text-lg font-black text-purple-400">{territories.filter(t => t.ownerId === currentUser?.id).length}</div>
+      {
+        !isRunning && (
+          <div className="absolute bottom-28 left-4 z-20 pointer-events-none">
+            <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-3 flex items-center gap-4">
+              <div>
+                <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Distância Total</div>
+                <div className="text-lg font-black text-white">{distance.toFixed(2)} <span className="text-xs text-gray-500">km</span></div>
+              </div>
+              <div className="h-8 w-px bg-white/10"></div>
+              <div>
+                <div className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Territórios</div>
+                <div className="text-lg font-black text-purple-400">{territories.filter(t => t.ownerId === currentUser?.id).length}</div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Feed (Bottom Right, reduced size) */}
       <div className="absolute bottom-28 right-4 z-20 w-48 pointer-events-none">
@@ -673,69 +686,90 @@ export default function App() {
 
       {showTutorial && <TutorialScreen onClose={() => setShowTutorial(false)} />}
 
-      {showProfile && (
-        <ProfileScreen
-          user={currentUser}
-          territories={territories}
-          totalDistance={distance}
-          totalStars={userStars}
-          onClose={() => setShowProfile(false)}
-          onLogout={handleLogout}
-          onAdminAccess={() => {
-            setShowProfile(false);
-            setShowAdminDashboard(true);
-          }}
-          onTerritoryClick={handleTerritoryClick}
-          onCreateTeam={() => {
-            setShowProfile(false);
-            setShowCreateTeam(true);
-          }}
-          onViewTeam={() => {
-            setShowProfile(false);
-            setShowTeamDashboard(true);
-          }}
-        />
-      )}
+      {
+        showProfile && (
+          <ProfileScreen
+            user={currentUser}
+            territories={territories}
+            totalDistance={distance}
+            totalStars={userStars}
+            onClose={() => setShowProfile(false)}
+            onLogout={handleLogout}
+            onAdminAccess={() => {
+              setShowProfile(false);
+              setShowAdminDashboard(true);
+            }}
+            onTerritoryClick={handleTerritoryClick}
+            onShowLeaderboard={() => {
+              setShowProfile(false);
+              setShowLeaderboard(true);
+            }}
+            onViewTeam={() => {
+              setShowProfile(false);
+              if (currentUser.teamId) {
+                setShowTeamDashboard(true);
+              } else if (currentUser.role === 'owner') {
+                setShowCreateTeam(true); // Should be automatic, but fallback
+              }
+            }}
+          />
+        )
+      }
 
-      {showTeamDashboard && currentTeam && currentUser && (
-        <TeamDashboard
-          team={currentTeam}
-          currentUser={{ id: currentUser.id, name: currentUser.name }}
-          onClose={() => setShowTeamDashboard(false)}
-          onCreateChallenge={(name, desc, points, start, end) => handleCreateChallenge(name, desc, points, start, end)}
-        />
-      )}
+      {
+        showTeamDashboard && currentTeam && currentUser && (
+          <TeamDashboard
+            team={currentTeam}
+            currentUser={{ id: currentUser.id, name: currentUser.name }}
+            onClose={() => setShowTeamDashboard(false)}
+            onCreateChallenge={(name, desc, points, start, end) => handleCreateChallenge(name, desc, points, start, end)}
+          />
+        )
+      }
 
-      {showAdminDashboard && (
-        <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
-      )}
+      {
+        showLeaderboard && (
+          <LeaderboardModal
+            currentUser={currentUser}
+            onClose={() => setShowLeaderboard(false)}
+          />
+        )
+      }
+
+      {
+        showAdminDashboard && (
+          <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
+        )
+      }
 
       {/* Activity Selector Modal */}
-      {showActivitySelector && (
-        <div className="fixed inset-0 z-[10001] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-gray-900 border border-gray-700 p-6 rounded-3xl w-full max-w-sm">
-            <h3 className="text-white font-black text-xl mb-6 text-center">Escolha sua Modalidade</h3>
-            <ActivityModeSelector
-              selectedMode={selectedActivityMode}
-              onSelectMode={setSelectedActivityMode}
-            />
-            <div className="mt-8 flex justify-center space-x-3">
-              <button
-                onClick={() => setShowActivitySelector(false)}
-                className="flex-1 py-4 bg-gray-800 text-gray-400 font-bold rounded-xl transition-all"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleStartWithMode}
-                className="flex-1 py-4 bg-gradient-to-r from-orange-500 to-blue-500 text-white font-bold rounded-xl shadow-lg hover:shadow-orange-500/20"
-              >
-                VAMOS! 🚀
-              </button>
+      {
+        showActivitySelector && (
+          <div className="fixed inset-0 z-[10001] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-gray-900 border border-gray-700 p-6 rounded-3xl w-full max-w-sm">
+              <h3 className="text-white font-black text-xl mb-6 text-center">Escolha sua Modalidade</h3>
+              <ActivityModeSelector
+                selectedMode={selectedActivityMode}
+                onSelectMode={setSelectedActivityMode}
+              />
+              <div className="mt-8 flex justify-center space-x-3">
+                <button
+                  onClick={() => setShowActivitySelector(false)}
+                  className="flex-1 py-4 bg-gray-800 text-gray-400 font-bold rounded-xl transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleStartWithMode}
+                  className="flex-1 py-4 bg-gradient-to-r from-orange-500 to-blue-500 text-white font-bold rounded-xl shadow-lg hover:shadow-orange-500/20"
+                >
+                  VAMOS! 🚀
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Team Modals */}
       <CreateTeamModal
@@ -744,22 +778,26 @@ export default function App() {
         onCreateTeam={handleCreateTeam}
       />
 
-      {currentTeam && (
-        <CreateChallengeModal
-          isOpen={showCreateChallenge}
-          teamName={currentTeam.name}
-          onClose={() => setShowCreateChallenge(false)}
-          onCreateChallenge={handleCreateChallenge}
-        />
-      )}
+      {
+        currentTeam && (
+          <CreateChallengeModal
+            isOpen={showCreateChallenge}
+            teamName={currentTeam.name}
+            onClose={() => setShowCreateChallenge(false)}
+            onCreateChallenge={handleCreateChallenge}
+          />
+        )
+      }
 
       {/* Processing Spinner Overlay */}
-      {processing && (
-        <div className="absolute inset-0 z-[100] bg-black/80 flex flex-col items-center justify-center backdrop-blur-md">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-neon-green mb-4 shadow-[0_0_20px_#39ff14]"></div>
-          <h2 className="text-2xl font-black text-white italic tracking-tighter animate-pulse">PROCESSANDO...</h2>
-        </div>
-      )}
+      {
+        processing && (
+          <div className="absolute inset-0 z-[100] bg-black/80 flex flex-col items-center justify-center backdrop-blur-md">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-neon-green mb-4 shadow-[0_0_20px_#39ff14]"></div>
+            <h2 className="text-2xl font-black text-white italic tracking-tighter animate-pulse">PROCESSANDO...</h2>
+          </div>
+        )
+      }
 
       {/* Controls (Hidden - logic only if needed, but AppShell handles buttons now) */}
       <div className="hidden">
@@ -770,14 +808,16 @@ export default function App() {
       {showGameRules && <GameRules onClose={() => setShowGameRules(false)} />}
 
       {/* Social Share Card */}
-      {showShareCard && lastConqueredTerritory && currentUser && (
-        <ShareCard
-          territory={lastConqueredTerritory}
-          user={currentUser}
-          onClose={() => setShowShareCard(false)}
-        />
-      )}
+      {
+        showShareCard && lastConqueredTerritory && currentUser && (
+          <ShareCard
+            territory={lastConqueredTerritory}
+            user={currentUser}
+            onClose={() => setShowShareCard(false)}
+          />
+        )
+      }
 
-    </AppShell>
+    </AppShell >
   );
 }

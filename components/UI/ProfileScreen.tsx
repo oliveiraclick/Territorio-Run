@@ -12,7 +12,7 @@ interface ProfileScreenProps {
     onLogout: () => void;
     onAdminAccess: () => void;
     onTerritoryClick?: (territoryId: string) => void;
-    onCreateTeam?: () => void;
+    onShowLeaderboard: () => void;
     onViewTeam?: () => void;
 }
 
@@ -25,7 +25,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     onLogout,
     onAdminAccess,
     onTerritoryClick,
-    onCreateTeam,
+    onShowLeaderboard,
     onViewTeam,
 }) => {
     const [showAdminLogin, setShowAdminLogin] = React.useState(false);
@@ -90,16 +90,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                         </div>
                         <span className="text-[10px] font-bold text-gray-500 group-hover:text-gray-300">ADMIN</span>
                     </div>
-                    {/* Only show Create Team for Owners who don't have a team yet, or if user is in a team show nothing/Team View is handled by onViewTeam */}
-                    {(!user.teamId && user.role === 'owner') && (
-                        <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group" onClick={onCreateTeam}>
-                            <div className="w-12 h-12 bg-gold-500/10 rounded-xl flex items-center justify-center text-gold-500 group-hover:bg-gold-500/20 transition-all mb-2 border border-gold-500/20">
-                                <Users size={20} />
-                            </div>
-                            <span className="text-[10px] font-bold text-gray-500 group-hover:text-gold-400">CRIAR</span>
-                        </div>
-                    )}
-                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group" onClick={onViewTeam}>
+                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group" onClick={onShowLeaderboard}>
                         <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white group-hover:bg-white/10 transition-all mb-2 border border-white/10">
                             <Award size={20} />
                         </div>
