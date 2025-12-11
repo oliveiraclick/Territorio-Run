@@ -58,13 +58,13 @@ export const AppShell: React.FC<AppShellProps> = ({
             </div>
 
             {/* --- BOTTOM NAVIGATION (Fixed Dock) --- */}
-            <div className="z-50 bg-surface-dark/95 backdrop-blur-md border-t border-white/10 pb-safe-bottom shadow-lg">
+            <div className="z-50 bg-surface-dark border-t border-white/5 pb-safe-bottom">
                 <div className="flex justify-around items-center px-2 py-2">
                     {/* 1. Map/Play */}
                     <NavButton
                         icon={<Map size={20} />}
                         label="Mapa"
-                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        onClick={() => { }}
                         active={true}
                     />
 
@@ -81,8 +81,8 @@ export const AppShell: React.FC<AppShellProps> = ({
                         <button
                             onClick={isRunning ? onStopClick : onStartClick}
                             className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl border-4 border-dark-bg transition-all transform active:scale-95 ${isRunning
-                                ? 'bg-red-600 shadow-red-900/50'
-                                : 'bg-gradient-to-br from-gold-400 to-gold-600 shadow-gold-500/30'
+                                    ? 'bg-red-600 shadow-red-900/50'
+                                    : 'bg-gradient-to-br from-gold-400 to-gold-600 shadow-gold-500/30'
                                 }`}
                         >
                             {isRunning ? (
