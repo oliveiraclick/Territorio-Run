@@ -1,4 +1,4 @@
-const CACHE_NAME = 'territory-run-v6';
+const CACHE_NAME = 'territory-run-v7';
 const urlsToCache = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
   // Force new service worker to activate immediately
   self.skipWaiting();
-  
+
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
