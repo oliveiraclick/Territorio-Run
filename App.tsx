@@ -745,23 +745,23 @@ export default function App() {
       {/* Activity Selector Modal */}
       {
         showActivitySelector && (
-          <div className="fixed inset-0 z-[10001] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-gray-900 border border-gray-700 p-6 rounded-3xl w-full max-w-sm">
-              <h3 className="text-white font-black text-xl mb-6 text-center">Escolha sua Modalidade</h3>
+          <div className="fixed inset-0 z-[10001] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center">
+            <div className="bg-gray-900 border-t sm:border border-gray-700 p-5 sm:rounded-3xl w-full sm:max-w-sm max-h-[80vh] overflow-y-auto">
+              <h3 className="text-white font-black text-lg mb-4 text-center">Escolha sua Modalidade</h3>
               <ActivityModeSelector
                 selectedMode={selectedActivityMode}
                 onSelectMode={setSelectedActivityMode}
               />
-              <div className="mt-8 flex justify-center space-x-3">
+              <div className="mt-6 flex justify-center space-x-3">
                 <button
                   onClick={() => setShowActivitySelector(false)}
-                  className="flex-1 py-4 bg-gray-800 text-gray-400 font-bold rounded-xl transition-all"
+                  className="flex-1 py-3 bg-gray-800 text-gray-400 font-bold rounded-xl transition-all text-sm"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleStartWithMode}
-                  className="flex-1 py-4 bg-gradient-to-r from-orange-500 to-blue-500 text-white font-bold rounded-xl shadow-lg hover:shadow-orange-500/20"
+                  className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-blue-500 text-white font-bold rounded-xl shadow-lg hover:shadow-orange-500/20 text-sm"
                 >
                   VAMOS! 🚀
                 </button>

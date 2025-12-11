@@ -253,14 +253,14 @@ const GameMap: React.FC<GameMapProps> = ({ currentPath, territories, userLocatio
             {/* Pulsating Effect */}
             <Circle
               center={[userLocation.lat, userLocation.lng]}
-              pathOptions={{ fillColor: '#39ff14', fillOpacity: 0.1, stroke: false }}
+              pathOptions={{ fillColor: '#f59e0b', fillOpacity: 0.2, stroke: false }}
               radius={8}
             />
             {/* Center Dot */}
             <Circle
               center={[userLocation.lat, userLocation.lng]}
-              pathOptions={{ fillColor: '#39ff14', fillOpacity: 1, stroke: true, color: '#fff', weight: 2 }}
-              radius={4}
+              pathOptions={{ fillColor: '#f59e0b', fillOpacity: 1, stroke: true, color: '#fff', weight: 3 }}
+              radius={5}
             />
           </>
         )}

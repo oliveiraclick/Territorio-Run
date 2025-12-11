@@ -83,7 +83,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             <div className="relative px-4 -mt-8 z-20 pb-32 max-w-md mx-auto">
 
                 {/* Actions Grid */}
-                <div className="bg-surface-dark border border-white/5 rounded-2xl shadow-2xl p-4 mb-6 grid grid-cols-4 gap-2">
+                <div className="bg-surface-dark/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl p-4 mb-6 grid grid-cols-4 gap-2">
                     <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group" onClick={() => setShowAdminLogin(!showAdminLogin)}>
                         <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all mb-2">
                             <Lock size={20} />
@@ -96,6 +96,15 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                         </div>
                         <span className="text-[10px] font-bold text-gray-500 group-hover:text-white">RANK</span>
                     </div>
+                    {/* Team Icon - Only show for owners */}
+                    {user.role === 'owner' && onViewTeam && (
+                        <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group" onClick={onViewTeam}>
+                            <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white group-hover:bg-white/10 transition-all mb-2 border border-white/10">
+                                <Users size={20} />
+                            </div>
+                            <span className="text-[10px] font-bold text-gray-500 group-hover:text-white">EQUIPE</span>
+                        </div>
+                    )}
                     <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group" onClick={onLogout}>
                         <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 group-hover:bg-red-500/20 transition-all mb-2 border border-red-500/20">
                             <LogOut size={20} />
@@ -105,7 +114,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 </div>
 
                 {showAdminLogin && (
-                    <div className="mb-6 p-4 bg-surface-dark rounded-xl flex animate-pulse border border-white/5 shadow-lg">
+                    <div className="mb-6 p-4 bg-surface-dark/95 backdrop-blur-md rounded-xl flex animate-pulse border border-white/10 shadow-lg">
                         <input
                             type="password"
                             placeholder="Senha de acesso"
@@ -126,12 +135,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                             Performence
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-surface-dark p-4 rounded-2xl border border-white/5 relative overflow-hidden group">
+                            <div className="bg-surface-dark/95 backdrop-blur-sm p-4 rounded-2xl border border-white/10 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-16 h-16 bg-gold-500/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                                 <span className="block text-3xl font-black text-white mb-1 group-hover:text-gold-400 transition-colors">{totalTerritories}</span>
                                 <span className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Territórios</span>
                             </div>
-                            <div className="bg-surface-dark p-4 rounded-2xl border border-white/5 relative overflow-hidden group">
+                            <div className="bg-surface-dark/95 backdrop-blur-sm p-4 rounded-2xl border border-white/10 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                                 <span className="block text-3xl font-black text-white mb-1 group-hover:text-gold-400 transition-colors">{totalDistance.toFixed(1)}</span>
                                 <span className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">KM Totais</span>
@@ -152,7 +161,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                 { name: 'Conquistador', icon: '👑', active: totalTerritories >= 10 },
                                 { name: 'Lenda', icon: '🔥', active: level >= 10 },
                             ].map((ach, i) => (
-                                <div key={i} className={`flex-shrink-0 w-24 h-28 rounded-xl flex flex-col items-center justify-center p-2 text-center border transition-all ${ach.active ? 'border-gold-500/30 bg-surface-dark shadow-[0_4px_20px_rgba(0,0,0,0.3)]' : 'border-dashed border-white/5 bg-white/5 opacity-50 grayscale'}`}>
+                                <div key={i} className={`flex-shrink-0 w-24 h-28 rounded-xl flex flex-col items-center justify-center p-2 text-center border transition-all ${ach.active ? 'border-gold-500/30 bg-surface-dark/95 backdrop-blur-sm shadow-[0_4px_20px_rgba(0,0,0,0.3)]' : 'border-dashed border-white/5 bg-white/5 opacity-50 grayscale'}`}>
                                     <span className="text-3xl mb-3 drop-shadow-md transform group-hover:scale-110 transition-transform">{ach.icon}</span>
                                     <span className={`text-[10px] font-bold uppercase tracking-wide ${ach.active ? 'text-gold-400' : 'text-gray-600'}`}>{ach.name}</span>
                                 </div>
@@ -171,8 +180,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                             {myTerritories.map(t => (
                                 <button
                                     key={t.id}
-                                    onClick={() => onTerritoryClick && onTerritoryClick(t.id)}
-                                    className="w-full bg-surface-dark p-4 rounded-xl border border-white/5 flex items-center justify-between hover:border-gold-500/30 active:scale-[0.98] transition-all text-left group shadow-lg"
+                                    className="w-full bg-surface-dark/95 backdrop-blur-sm p-4 rounded-xl border border-white/10 flex items-center justify-between hover:border-gold-500/30 active:scale-[0.98] transition-all text-left group shadow-lg"
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-full bg-black/50 border border-white/5 flex items-center justify-center text-lg shadow-inner">📍</div>
@@ -188,7 +196,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                 </button>
                             ))}
                             {myTerritories.length === 0 && (
-                                <div className="text-center py-10 opacity-50 bg-surface-dark rounded-xl border border-dashed border-white/10">
+                                <div className="text-center py-10 opacity-50 bg-surface-dark/95 backdrop-blur-sm rounded-xl border border-dashed border-white/10">
                                     <MapPin size={32} className="mx-auto mb-3 text-gray-600" />
                                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Nenhum território<br />conquistado ainda.</p>
                                 </div>
