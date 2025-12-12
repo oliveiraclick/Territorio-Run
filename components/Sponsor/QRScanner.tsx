@@ -58,7 +58,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onClose, onScanSuccess, us
                         aspectRatio: 1.0,
                         showTorchButtonIfSupported: true,
                         videoConstraints: {
-                            facingMode: { exact: "environment" } // Try back camera explicitly
+                            facingMode: "environment" // Prefer back camera with fallback
                         }
                     },
                     /* verbose= */ false
