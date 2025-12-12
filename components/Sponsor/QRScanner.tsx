@@ -1,13 +1,12 @@
-
-import React, { useEffect, useState, useRef } from 'react';
-import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
-import { X, Camera, MapPin, CheckCircle, AlertTriangle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
+import { X, Camera, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Sponsor, Coordinate } from '../../types';
 import { calculateDistance } from '../../utils/geoUtils';
 
 interface QRScannerProps {
     onClose: () => void;
-    onScanSuccess: (data: string, sponsorId?: string) => void;
+    onScanSuccess: (decodedText: string, sponsorId?: string) => void;
     userLocation: Coordinate | null;
     sponsors: Sponsor[];
 }
@@ -19,8 +18,6 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onClose, onScanSuccess, us
 
     // Check if we are close to any sponsor
     const findNearbySponsor = (qrValue: string) => {
-        // Find sponsor by QR value code (assuming the QR contains the secret token)
-        // Format: "SPONSOR_12345_abcde"
         const sponsor = sponsors.find(s => s.qrCodeValue === qrValue);
 
         if (!sponsor) {
@@ -36,8 +33,8 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onClose, onScanSuccess, us
             sponsor.coordinates.lat, sponsor.coordinates.lng
         );
 
-        // Limit: 50 meters
-        if (distance > 0.05) {
+        // Limit: 100 meters (0.1 km)
+        if (distance > 0.1) {
             return { error: `Você está muito longe (${(distance * 1000).toFixed(0)}m). Chegue mais perto da loja!` };
         }
 
@@ -45,111 +42,115 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onClose, onScanSuccess, us
     };
 
     useEffect(() => {
-        // Start scanner
         const scannerId = "reader";
+        let html5QrcodeScanner: Html5QrcodeScanner | null = null;
 
-        // Wait for DOM
-        setTimeout(() => {
-            const html5QrcodeScanner = new Html5QrcodeScanner(
-                scannerId,
-                { fps: 10, qrbox: 250 },
-                /* verbose= */ false
-            );
+        const timer = setTimeout(() => {
+            try {
+                // Check if element exists
+                if (!document.getElementById(scannerId)) return;
 
-            html5QrcodeScanner.render((decodedText, decodedResult) => {
-                setScannerStatus('processing');
+                html5QrcodeScanner = new Html5QrcodeScanner(
+                    scannerId,
+                    {
+                        fps: 10,
+                        qrbox: 250,
+                        aspectRatio: 1.0,
+                        showTorchButtonIfSupported: true,
+                        videoConstraints: {
+                            facingMode: { exact: "environment" } // Try back camera explicitly
+                        }
+                    },
+                    /* verbose= */ false
+                );
 
-                const result = findNearbySponsor(decodedText);
+                html5QrcodeScanner.render((decodedText) => {
+                    setScannerStatus('processing');
+                    const result = findNearbySponsor(decodedText);
 
-                if (result.error) {
-                    setErrorMessage(result.error);
-                    setScannerStatus('error');
-                    // Clear error after 3s to allow retry? 
-                    // Or just pause.
-                    setTimeout(() => {
-                        setScannerStatus('scanning');
-                        setErrorMessage('');
-                    }, 3000);
-                } else if (result.success && result.sponsor) {
-                    setScanResult(decodedText);
-                    setScannerStatus('success');
-                    html5QrcodeScanner.clear();
-
-                    // Trigger success
-                    setTimeout(() => {
-                        onScanSuccess(decodedText, result.sponsor?.id);
-                    }, 1500);
-                }
-            }, (errorMessage) => {
-                // parse error, ignore
-            });
-
-            setScannerStatus('scanning');
-
-            return () => {
-                html5QrcodeScanner.clear().catch(error => {
-                    console.error("Failed to clear html5QrcodeScanner. ", error);
+                    if (result.error) {
+                        setErrorMessage(result.error);
+                        setScannerStatus('error');
+                        setTimeout(() => {
+                            if (scannerStatus !== 'success') {
+                                setScannerStatus('scanning');
+                                setErrorMessage('');
+                            }
+                        }, 3000);
+                    } else if (result.success && result.sponsor) {
+                        setScanResult(decodedText);
+                        setScannerStatus('success');
+                        html5QrcodeScanner?.clear();
+                        setTimeout(() => {
+                            onScanSuccess(decodedText, result.sponsor?.id);
+                        }, 1500);
+                    }
+                }, (err) => {
+                    // ignore frame errors
                 });
-            };
-        }, 100);
 
+                setScannerStatus('scanning');
+            } catch (e) {
+                console.error("Scanner Error:", e);
+                setErrorMessage("Erro ao iniciar câmera. Permita o acesso.");
+                setScannerStatus('error');
+            }
+        }, 500);
+
+        return () => {
+            clearTimeout(timer);
+            if (html5QrcodeScanner) {
+                try {
+                    html5QrcodeScanner.clear();
+                } catch (e) { console.error(e); }
+            }
+        };
     }, []);
 
     return (
-        <div className="fixed inset-0 z-[10000] bg-black flex flex-col items-center justify-center">
-            {/* Header */}
-            <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-[200] bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
-                <h2 className="text-white font-bold text-lg flex items-center gap-2 pointer-events-auto">
+        <div className="fixed inset-0 z-[20000] bg-black flex flex-col pt-12 safe-top">
+            <div className="w-full text-center p-4">
+                <h2 className="text-white font-bold text-xl flex items-center justify-center gap-2">
                     <Camera className="text-gold-500" />
                     Validar Visita
                 </h2>
-                <button
-                    onClick={onClose}
-                    className="fixed top-4 right-4 z-[20000] bg-black/50 p-3 rounded-full text-white hover:bg-red-500 transition-colors pointer-events-auto border border-white/20 backdrop-blur-sm"
-                >
-                    <X size={24} />
-                </button>
+                <p className="text-gray-400 text-xs">Aponte para o QR Code da Loja</p>
             </div>
 
-            {/* Content */}
-            <div className="w-full max-w-md px-4 flex-1 flex flex-col justify-center">
+            <div className="flex-1 flex flex-col items-center justify-start w-full px-4 relative">
 
                 {scannerStatus === 'processing' && (
-                    <div className="flex flex-col items-center justify-center text-white mb-8 animate-pulse">
+                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80">
                         <div className="w-16 h-16 border-4 border-gold-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <p className="font-bold">Verificando localização...</p>
+                        <p className="font-bold text-white">Verificando...</p>
                     </div>
                 )}
 
                 {scannerStatus === 'success' && (
-                    <div className="flex flex-col items-center justify-center text-center animate-bounce-in">
-                        <div className="bg-green-500 text-black p-4 rounded-full mb-4 shadow-lg shadow-green-500/50">
-                            <CheckCircle size={48} />
-                        </div>
-                        <h3 className="text-2xl font-black text-white mb-2">SUCESSO!</h3>
-                        <p className="text-gray-300">Visita validada com sucesso.</p>
+                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-green-600/90 animate-bounce-in">
+                        <CheckCircle size={64} className="text-white mb-4" />
+                        <h3 className="text-2xl font-black text-white">SUCESSO!</h3>
                     </div>
                 )}
 
-                {scannerStatus === 'error' && (
-                    <div className="absolute top-20 left-4 right-4 bg-red-500/90 text-white p-4 rounded-xl border border-red-400 shadow-xl z-30 flex items-center gap-3 animate-slide-in">
-                        <AlertTriangle className="shrink-0" />
-                        <p className="text-sm font-bold">{errorMessage}</p>
+                {scannerStatus === 'error' && errorMessage && (
+                    <div className="w-full bg-red-500 text-white p-3 rounded-xl mb-4 text-center font-bold animate-pulse shadow-xl border border-red-300">
+                        <AlertTriangle className="inline-block mr-2" />
+                        {errorMessage}
                     </div>
                 )}
 
-                {/* Scanner Container */}
-                <div
-                    id="reader"
-                    className={`w-full overflow-hidden rounded-3xl border-2 border-white/20 shadow-2xl bg-black ${scannerStatus !== 'scanning' ? 'opacity-0 h-0' : 'opacity-100'}`}
-                ></div>
+                <div id="reader" className="w-full max-w-sm overflow-hidden rounded-2xl border-4 border-gold-500/30 bg-black min-h-[300px]"></div>
 
-                {scannerStatus === 'scanning' && (
-                    <p className="text-center text-gray-400 text-xs mt-6 max-w-xs mx-auto">
-                        Aponte a câmera para o QR Code no balcão da loja.
-                        Você precisa estar no local para validar.
-                    </p>
-                )}
+                <div className="mt-8 flex justify-center w-full">
+                    <button
+                        onClick={onClose}
+                        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold text-lg shadow-2xl transition-transform active:scale-95 border-2 border-white/20"
+                    >
+                        <X size={24} />
+                        CANCELAR
+                    </button>
+                </div>
             </div>
         </div>
     );

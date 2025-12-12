@@ -12,7 +12,8 @@ import TeamDashboard from './components/Team/TeamDashboard';
 import CreateChallengeModal from './components/Team/CreateChallengeModal';
 import ActivityModeSelector from './components/UI/ActivityModeSelector';
 import { GameRules } from './components/UI/GameRules';
-import { LeaderboardModal } from './components/UI/LeaderboardModal';
+import { useRegisterSW } from 'virtual:pwa-register/react';
+import { RefreshCw } from 'lucide-react';
 
 import { StarBar } from './components/UI/StarBar';
 import { RunMetrics } from './components/UI/RunMetrics';
@@ -43,6 +44,18 @@ import { QRScanner } from './components/Sponsor/QRScanner'; // Import QRScanner
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) {
+      console.log('SW Registered');
+    },
+    onRegisterError(error) {
+      console.log('SW registration error', error);
+    },
+  });
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(false);
 
@@ -921,17 +934,36 @@ export default function App() {
       {/* Game Rules Modal */}
       {showGameRules && <GameRules onClose={() => setShowGameRules(false)} />}
 
-      {/* Social Share Card */}
-      {
-        showShareCard && lastConqueredTerritory && currentUser && (
-          <ShareCard
-            territory={lastConqueredTerritory}
-            user={currentUser}
-            onClose={() => setShowShareCard(false)}
-          />
-        )
-      }
+      {/* Social Share Card logic placeholder if needed */}
 
-    </AppShell >
+      {/* PWA Update Toast */}
+      {needRefresh && (
+        <div className="fixed bottom-24 left-4 right-4 z-[50000] bg-zinc-900 border border-gold-500 p-4 rounded-xl shadow-2xl flex items-center justify-between animate-in slide-in-from-bottom duration-300">
+          <div className="flex items-center gap-3">
+            <RefreshCw className="text-gold-500 animate-spin" />
+            <div>
+              <h4 className="text-white font-bold text-sm">Nova Versão Disponível</h4>
+              <p className="text-gray-400 text-xs">Toque para atualizar agora.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => updateServiceWorker(true)}
+            className="bg-gold-500 hover:bg-gold-400 text-black font-black px-4 py-2 rounded-lg text-xs uppercase shadow-lg"
+          >
+            ATUALIZAR
+          </button>
+        </div>
+      )}
+
+      {/* Social Share Card */}
+      {showShareCard && lastConqueredTerritory && currentUser && (
+        <ShareCard
+          territory={lastConqueredTerritory}
+          user={currentUser}
+          onClose={() => setShowShareCard(false)}
+        />
+      )}
+
+    </div>
   );
 }

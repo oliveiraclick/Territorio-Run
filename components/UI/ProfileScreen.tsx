@@ -49,12 +49,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         <div className="fixed inset-0 z-[10000] bg-zinc-950/98 backdrop-blur-xl text-white overflow-y-auto animate-in slide-in-from-bottom duration-300 font-sans">
             {/* Close Button */}
             {/* Close Button - Fixed Position explicitly high z-index */}
+            {/* Close Button - Fixed Position - Lower to avoid safe areas */}
             <button
                 onClick={onClose}
-                className="fixed top-6 right-6 z-[20000] p-3 rounded-full bg-zinc-900 border-2 border-white/10 text-white hover:bg-zinc-800 hover:border-white/30 shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-all active:scale-95 flex items-center justify-center"
+                className="fixed top-12 right-6 z-[20000] p-4 rounded-full bg-red-600/90 border-2 border-white/20 text-white shadow-2xl flex items-center justify-center active:scale-90 transition-transform"
+                style={{ boxShadow: '0 0 20px rgba(0,0,0,0.8)' }}
                 aria-label="Fechar"
             >
-                <X size={26} strokeWidth={2.5} />
+                <X size={32} strokeWidth={3} />
             </button>
 
             {/* Header / Top Bar for Profile */}
