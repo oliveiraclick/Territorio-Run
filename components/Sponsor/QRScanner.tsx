@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { X, Camera, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Sponsor, Coordinate } from '../../types';
 import { calculateDistance } from '../../utils/geoUtils';
@@ -43,51 +43,49 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onClose, onScanSuccess, us
 
     useEffect(() => {
         const scannerId = "reader";
-        let html5QrcodeScanner: Html5QrcodeScanner | null = null;
+        let html5QrCode: Html5Qrcode | null = null;
 
-        const timer = setTimeout(() => {
+        const timer = setTimeout(async () => {
             try {
                 // Check if element exists
                 if (!document.getElementById(scannerId)) return;
 
-                html5QrcodeScanner = new Html5QrcodeScanner(
-                    scannerId,
+                html5QrCode = new Html5Qrcode(scannerId);
+
+                // Start scanning directly without UI selector
+                await html5QrCode.start(
+                    { facingMode: "environment" }, // Prefer back camera
                     {
                         fps: 10,
-                        qrbox: 250,
+                        qrbox: { width: 250, height: 250 },
                         aspectRatio: 1.0,
-                        showTorchButtonIfSupported: true,
-                        videoConstraints: {
-                            facingMode: "environment" // Prefer back camera with fallback
+                    },
+                    (decodedText) => {
+                        setScannerStatus('processing');
+                        const result = findNearbySponsor(decodedText);
+
+                        if (result.error) {
+                            setErrorMessage(result.error);
+                            setScannerStatus('error');
+                            setTimeout(() => {
+                                if (scannerStatus !== 'success') {
+                                    setScannerStatus('scanning');
+                                    setErrorMessage('');
+                                }
+                            }, 3000);
+                        } else if (result.success && result.sponsor) {
+                            setScanResult(decodedText);
+                            setScannerStatus('success');
+                            html5QrCode?.stop();
+                            setTimeout(() => {
+                                onScanSuccess(decodedText, result.sponsor?.id);
+                            }, 1500);
                         }
                     },
-                    /* verbose= */ false
-                );
-
-                html5QrcodeScanner.render((decodedText) => {
-                    setScannerStatus('processing');
-                    const result = findNearbySponsor(decodedText);
-
-                    if (result.error) {
-                        setErrorMessage(result.error);
-                        setScannerStatus('error');
-                        setTimeout(() => {
-                            if (scannerStatus !== 'success') {
-                                setScannerStatus('scanning');
-                                setErrorMessage('');
-                            }
-                        }, 3000);
-                    } else if (result.success && result.sponsor) {
-                        setScanResult(decodedText);
-                        setScannerStatus('success');
-                        html5QrcodeScanner?.clear();
-                        setTimeout(() => {
-                            onScanSuccess(decodedText, result.sponsor?.id);
-                        }, 1500);
+                    (err) => {
+                        // ignore frame errors
                     }
-                }, (err) => {
-                    // ignore frame errors
-                });
+                );
 
                 setScannerStatus('scanning');
             } catch (e) {
@@ -99,16 +97,27 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onClose, onScanSuccess, us
 
         return () => {
             clearTimeout(timer);
-            if (html5QrcodeScanner) {
+            if (html5QrCode) {
                 try {
-                    html5QrcodeScanner.clear();
+                    html5QrCode.stop().catch(e => console.error(e));
                 } catch (e) { console.error(e); }
             }
         };
     }, []);
 
+
     return (
         <div className="fixed inset-0 z-[20000] bg-black flex flex-col pt-12 safe-top">
+
+            {/* Close Button - Top Right */}
+            <button
+                onClick={onClose}
+                className="fixed top-6 right-6 z-[30000] p-3 rounded-full bg-red-600/90 border-2 border-white/20 text-white shadow-2xl flex items-center justify-center active:scale-90 transition-transform"
+                aria-label="Fechar"
+            >
+                <X size={28} strokeWidth={3} />
+            </button>
+
             <div className="w-full text-center p-4">
                 <h2 className="text-white font-bold text-xl flex items-center justify-center gap-2">
                     <Camera className="text-gold-500" />
@@ -142,15 +151,6 @@ export const QRScanner: React.FC<QRScannerProps> = ({ onClose, onScanSuccess, us
 
                 <div id="reader" className="w-full max-w-sm overflow-hidden rounded-2xl border-4 border-gold-500/30 bg-black min-h-[300px]"></div>
 
-                <div className="mt-8 flex justify-center w-full">
-                    <button
-                        onClick={onClose}
-                        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold text-lg shadow-2xl transition-transform active:scale-95 border-2 border-white/20"
-                    >
-                        <X size={24} />
-                        CANCELAR
-                    </button>
-                </div>
             </div>
         </div>
     );
