@@ -116,10 +116,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                     </div>
                 </div>
 
+
                 {/* FORCE UPDATE BUTTON - HIGHLIGHTED */}
                 <button
                     onClick={() => window.location.reload()}
-                    className="w-full mb-6 bg-gradient-to-r from-gold-500 to-yellow-600 hover:from-gold-400 hover:to-yellow-500 text-black font-black text-sm py-4 rounded-xl shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-2 border-2 border-gold-300"
+                    className="w-full mb-6 bg-white hover:bg-gray-100 text-black font-black text-sm py-4 rounded-xl shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-2 border-2 border-white/20"
                 >
                     <RefreshCw size={18} className="animate-spin-slow" />
                     FORÇAR ATUALIZAÇÃO DO APP
