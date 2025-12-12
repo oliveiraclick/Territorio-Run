@@ -1,4 +1,4 @@
-const CACHE_NAME = 'territory-run-v7';
+const CACHE_NAME = 'territory-run-v8';
 const urlsToCache = [
   './',
   './index.html',
@@ -15,6 +15,13 @@ self.addEventListener('install', (event) => {
         return cache.addAll(urlsToCache);
       })
   );
+});
+
+// Listen for SKIP_WAITING message
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (event) => {

@@ -149,15 +149,119 @@
 
   <script>
     if ('serviceWorker' in navigator) {
+      let refreshing = false;
+
+      // Detectar quando o SW foi atualizado e está esperando
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
           .then(registration => {
             console.log('SW registered: ', registration);
+
+            // Verificar atualizações a cada 60 segundos
+            setInterval(() => {
+              registration.update();
+            }, 60000);
+
+            // Detectar quando há um novo SW esperando
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // Há uma nova versão disponível!
+                  showUpdateNotification(registration);
+                }
+              });
+            });
+
+            // Verificar se já há um SW esperando
+            if (registration.waiting) {
+              showUpdateNotification(registration);
+            }
           })
           .catch(registrationError => {
             console.log('SW registration failed: ', registrationError);
           });
       });
+
+      function showUpdateNotification(registration) {
+        // Criar notificação de atualização
+        const updateBanner = document.createElement('div');
+        updateBanner.id = 'update-banner';
+        updateBanner.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
+          color: black;
+          padding: 16px;
+          text-align: center;
+          z-index: 99999;
+          font-family: system-ui, -apple-system, sans-serif;
+          font-weight: bold;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          animation: slideDown 0.3s ease-out;
+        `;
+        
+        updateBanner.innerHTML = `
+          <div style="max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <span style="flex: 1; font-size: 14px;">🎉 Nova versão disponível!</span>
+            <button id="update-btn" style="
+              background: black;
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 8px;
+              font-weight: bold;
+              cursor: pointer;
+              font-size: 13px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            ">Atualizar Agora</button>
+            <button id="dismiss-btn" style="
+              background: transparent;
+              color: black;
+              border: 2px solid black;
+              padding: 10px 16px;
+              border-radius: 8px;
+              font-weight: bold;
+              cursor: pointer;
+              font-size: 13px;
+            ">✕</button>
+          </div>
+        `;
+
+        // Adicionar animação
+        const style = document.createElement('style');
+        style.textContent = `
+          @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+          }
+        `;
+        document.head.appendChild(style);
+
+        document.body.appendChild(updateBanner);
+
+        // Botão de atualizar
+        document.getElementById('update-btn').addEventListener('click', () => {
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+
+        // Botão de dispensar
+        document.getElementById('dismiss-btn').addEventListener('click', () => {
+          updateBanner.remove();
+        });
+      }
     }
   </script>
 
