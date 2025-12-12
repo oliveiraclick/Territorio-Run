@@ -128,14 +128,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
             <button
               type="button"
               onClick={() => setIsBusiness(false)}
-              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${!isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg' : 'text-white hover:text-gray-300'}`}
+              className={`flex-1 py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all ${!isBusiness ? 'bg-gradient-to-r from-gold-500 via-yellow-500 to-gold-600 text-black shadow-lg shadow-gold-500/30' : 'bg-transparent text-white hover:text-gold-300'}`}
             >
               🏃 Atleta
             </button>
             <button
               type="button"
               onClick={() => setIsBusiness(true)}
-              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg' : 'text-white hover:text-gray-300'}`}
+              className={`flex-1 py-3 rounded-xl font-black text-sm uppercase tracking-wider transition-all ${isBusiness ? 'bg-gradient-to-r from-gold-500 via-yellow-500 to-gold-600 text-black shadow-lg shadow-gold-500/30' : 'bg-transparent text-white hover:text-gold-300'}`}
             >
               🏢 Assessoria
             </button>
@@ -263,7 +263,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all mt-5 ${loading ? 'bg-gray-600 cursor-not-allowed text-white' : 'bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-400 hover:to-yellow-400 text-black active:scale-95'}`}
+            className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-2xl flex items-center justify-center gap-2 transition-all mt-5 ${loading ? 'bg-gray-600 cursor-not-allowed text-white' : 'bg-gradient-to-r from-gold-500 via-yellow-500 to-gold-600 hover:from-gold-400 hover:via-yellow-400 hover:to-gold-500 text-black shadow-gold-500/40 active:scale-95'}`}
           >
             {loading ? (
               <span>Carregando...</span>
