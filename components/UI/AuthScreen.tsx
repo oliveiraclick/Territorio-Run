@@ -105,217 +105,201 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
   }
 
   return (
-    <div className="min-h-screen bg-dark-bg font-sans selection:bg-gold-500 selection:text-black flex relative overflow-hidden">
-      {/* Background Image with Transparency */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black/95 z-10"></div>
-        <img
-          src="/background-with-logo.png"
-          alt="Background"
-          className="w-full h-full object-cover opacity-30 mix-blend-overlay"
-        />
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-black to-zinc-900 font-sans selection:bg-gold-500 selection:text-black flex flex-col relative overflow-hidden">
+
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gold-600/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
 
+      {/* Main Content - Fullscreen */}
+      <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center px-6 py-8">
 
-      {/* Main Content - Login Form */}
-      <div className="relative z-10 w-full flex items-center justify-center p-6">
-        <div className="w-full max-w-md bg-surface-dark/90 backdrop-blur-xl p-8 rounded-[2rem] shadow-2xl border border-white/5">
-          {/* Mobile Logo */}
-          <div className="flex items-center justify-center mb-6">
-            <img
-              src="/brand-logo-login.png"
-              alt="Territory Run"
-              className="h-56 w-auto object-contain drop-shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-transform hover:scale-105 duration-500"
-            />
+        {/* Logo */}
+        <div className="flex items-center justify-center mb-8">
+          <img
+            src="/brand-logo-login.png"
+            alt="Territory Run"
+            className="h-32 w-auto object-contain drop-shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-transform hover:scale-105 duration-500"
+          />
+        </div>
+
+        {/* Business Toggle Tabs */}
+        {!inviteTeam && (
+          <div className="w-full max-w-sm flex p-1 bg-white/5 rounded-2xl mb-6 border border-white/10 backdrop-blur-sm">
+            <button
+              type="button"
+              onClick={() => setIsBusiness(false)}
+              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${!isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg shadow-gold-500/20' : 'text-gray-400 hover:text-gray-200'}`}
+            >
+              🏃 Atleta
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsBusiness(true)}
+              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg shadow-gold-500/20' : 'text-gray-400 hover:text-gray-200'}`}
+            >
+              🏢 Assessoria
+            </button>
           </div>
+        )}
 
-          {/* Business Toggle Tabs */}
-          {!inviteTeam && (
-            <div className="flex p-1 bg-black/40 rounded-xl mb-6 border border-white/5">
+        {/* Welcome Text */}
+        <div className="w-full max-w-sm mb-6 text-center">
+          {inviteTeam ? (
+            <div className="bg-gradient-to-r from-gold-600/20 to-gold-400/20 p-4 rounded-2xl mb-4 border border-gold-500/30 backdrop-blur-sm">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <Users className="text-gold-400" size={24} />
+                <h3 className="text-lg font-black text-white">Convite de Equipe!</h3>
+              </div>
+              <p className="text-gray-300 text-sm">
+                Equipe: <strong className="text-gold-400">{inviteTeam.name}</strong>
+              </p>
               <button
-                type="button"
-                onClick={() => setIsBusiness(false)}
-                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${!isBusiness ? 'bg-yellow-500 text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                onClick={() => setShowLandingPage(true)}
+                className="mt-2 text-xs text-gold-400 underline hover:text-gold-300 transition-colors font-bold"
               >
-                Sou Atleta
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsBusiness(true)}
-                className={`flex-1 py-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-all ${isBusiness ? 'bg-yellow-500 text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
-              >
-                Sou Assessoria
+                Ver detalhes da equipe
               </button>
             </div>
+          ) : null}
+
+          <h2 className="text-3xl font-black text-white mb-2 tracking-tight">
+            {isBusiness ? 'Cadastro de Assessoria 🏢' : 'Bora Correr! 🏃'}
+          </h2>
+          <p className="text-sm text-gray-400 font-medium">
+            {isBusiness
+              ? 'Cadastre sua empresa e gerencie sua equipe.'
+              : inviteTeam
+                ? `Entre para a equipe ${inviteTeam.name}`
+                : 'Acesse para dominar territórios.'
+            }
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+
+          {isBusiness && (
+            <>
+              <div className="group">
+                <label className="block text-xs uppercase font-bold text-gold-400 mb-2 ml-1">Nome da Assessoria</label>
+                <div className="relative">
+                  <Building className="absolute left-4 top-3.5 text-gray-500" size={18} />
+                  <input
+                    type="text"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    className="w-full pl-12 pr-5 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 font-medium text-sm"
+                    placeholder="EX: IRON RUNNERS"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+              <div className="group">
+                <label className="block text-xs uppercase font-bold text-gold-400 mb-2 ml-1">CNPJ</label>
+                <div className="relative">
+                  <Briefcase className="absolute left-4 top-3.5 text-gray-500" size={18} />
+                  <input
+                    type="text"
+                    value={cnpj}
+                    onChange={(e) => setCnpj(e.target.value)}
+                    className="w-full pl-12 pr-5 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 font-medium text-sm"
+                    placeholder="00.000.000/0000-00"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+            </>
           )}
 
-          {/* Welcome Text */}
-          <div className="mb-6 text-center">
-            {inviteTeam ? (
-              <div className="bg-gradient-to-r from-gold-600 to-gold-400 p-[1px] rounded-2xl mb-4 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
-                <div className="bg-black/90 rounded-2xl p-4">
-                  <div className="flex items-center justify-center space-x-2 mb-1">
-                    <Users className="text-gold-500" size={20} />
-                    <h3 className="text-md font-black text-white">Convite de Equipe!</h3>
-                  </div>
-                  <p className="text-gray-300 text-xs">
-                    Equipe: <strong className="text-white">{inviteTeam.name}</strong>
-                  </p>
-                  <button
-                    onClick={() => setShowLandingPage(true)}
-                    className="mt-2 text-xs text-gold-500 underline hover:text-white transition-colors"
-                  >
-                    Ver detalhes
-                  </button>
-                </div>
-              </div>
-            ) : null}
-
-            <h2 className="text-2xl font-black text-white mb-1 tracking-tight">
-              {isBusiness ? 'Cadastro de Assessoria 🏢' : 'Bora Correr! 🏃'}
-            </h2>
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">
-              {isBusiness
-                ? 'Cadastre sua empresa e gerencie sua equipe.'
-                : inviteTeam
-                  ? `Entre para a equipe ${inviteTeam.name}`
-                  : 'Acesse para dominar territórios.'
-              }
-            </p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3 mb-6">
-
-            {isBusiness && (
-              <>
-                <div className="group">
-                  <label className="block text-[10px] uppercase font-bold text-gold-500 mb-1 ml-2">Nome da Assessoria</label>
-                  <div className="relative">
-                    <Building className="absolute left-4 top-3.5 text-gray-500" size={16} />
-                    <input
-                      type="text"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      className="w-full pl-12 pr-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm"
-                      placeholder="EX: IRON RUNNERS"
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-                <div className="group">
-                  <label className="block text-[10px] uppercase font-bold text-gold-500 mb-1 ml-2">CNPJ</label>
-                  <div className="relative">
-                    <Briefcase className="absolute left-4 top-3.5 text-gray-500" size={16} />
-                    <input
-                      type="text"
-                      value={cnpj}
-                      onChange={(e) => setCnpj(e.target.value)}
-                      className="w-full pl-12 pr-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm"
-                      placeholder="00.000.000/0000-00"
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-
-            <div className="group">
-              <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1 ml-2">{isBusiness ? 'Seu Nome (Responsável)' : 'Seu Codinome'}</label>
-              <div className="relative">
-                <Users className="absolute left-4 top-3.5 text-gray-500" size={16} />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-12 pr-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm"
-                  placeholder={isBusiness ? "SEU NOME" : "SEU APELIDO NA CORRIDA"}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div className="group">
-              <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1 ml-2">Celular / WhatsApp</label>
+          <div className="group">
+            <label className="block text-xs uppercase font-bold text-gray-400 mb-2 ml-1">{isBusiness ? 'Seu Nome (Responsável)' : 'Seu Codinome'}</label>
+            <div className="relative">
+              <Users className="absolute left-4 top-3.5 text-gray-500" size={18} />
               <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm"
-                placeholder="(11) 99999-9999"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full pl-12 pr-5 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 font-medium text-sm"
+                placeholder={isBusiness ? "SEU NOME" : "SEU APELIDO NA CORRIDA"}
                 disabled={loading}
               />
             </div>
+          </div>
 
-            <div className="group">
-              <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1 ml-2">Senha Secreta</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-5 py-3 rounded-xl border border-white/10 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 focus:outline-none transition-all bg-black/40 text-white placeholder-gray-600 font-bold text-sm pr-12"
-                  placeholder="••••••••"
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-3.5 text-gray-500 hover:text-white transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
+          <div className="group">
+            <label className="block text-xs uppercase font-bold text-gray-400 mb-2 ml-1">Celular / WhatsApp</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full px-5 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 font-medium text-sm"
+              placeholder="(11) 99999-9999"
               disabled={loading}
-              className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all group ${loading ? 'bg-gray-700 cursor-not-allowed text-gray-500' : 'bg-yellow-500 hover:bg-yellow-400 text-black shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:shadow-[0_0_30px_rgba(234,179,8,0.5)]'}`}
-            >
-              {loading ? (
-                <span>Carregando...</span>
-              ) : (
-                <>
-                  <Zap size={20} className={`fill-black ${!isBusiness && 'animate-pulse'}`} />
-                  <span>{isBusiness ? 'Cadastrar Assessoria' : inviteTeam ? 'Aceitar Convite' : 'Começar Agora'}</span>
-                </>
-              )}
-            </button>
-          </form>
+            />
+          </div>
 
-          {/* Explicit Toggle for Consultancy Visibility */}
-          {!inviteTeam && (
-            <div className="mt-4 text-center">
+          <div className="group">
+            <label className="block text-xs uppercase font-bold text-gray-400 mb-2 ml-1">Senha Secreta</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-5 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 font-medium text-sm pr-12"
+                placeholder="••••••••"
+                disabled={loading}
+              />
               <button
                 type="button"
-                onClick={() => setIsBusiness(!isBusiness)}
-                className="text-xs font-bold text-gray-500 hover:text-gold-500 transition-colors uppercase tracking-widest border-b border-transparent hover:border-gold-500 pb-0.5"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-3.5 text-gray-500 hover:text-white transition-colors"
+                tabIndex={-1}
               >
-                {isBusiness ? 'Voltar para cadastro de Atleta' : 'Assessoria? Cadastre-se aqui.'}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-          )}
-
-
-          {/* Features - Hidden on small mobile screens to save space */}
-          <div className="space-y-3 hidden md:block pt-4 border-t border-white/10">
-            {features.map((feature, index) => (
-              <div key={index} className="flex items-center space-x-4 p-3 rounded-xl transition-colors hover:bg-white/5">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                  {React.cloneElement(feature.icon as any, { className: "" })}
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-200 text-sm">{feature.title}</h3>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-wider">{feature.description}</p>
-                </div>
-              </div>
-            ))}
           </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all group mt-6 ${loading ? 'bg-gray-700 cursor-not-allowed text-gray-500' : 'bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-400 hover:to-yellow-400 text-black shadow-[0_0_30px_rgba(234,179,8,0.4)] hover:shadow-[0_0_40px_rgba(234,179,8,0.6)] active:scale-95'}`}
+          >
+            {loading ? (
+              <span>Carregando...</span>
+            ) : (
+              <>
+                <Zap size={20} className={`fill-black ${!isBusiness && 'animate-pulse'}`} />
+                <span>{isBusiness ? 'Cadastrar Assessoria' : inviteTeam ? 'Aceitar Convite' : 'Começar Agora'}</span>
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Toggle Link */}
+        {!inviteTeam && (
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => setIsBusiness(!isBusiness)}
+              className="text-xs font-bold text-gray-500 hover:text-gold-400 transition-colors uppercase tracking-widest border-b border-transparent hover:border-gold-400 pb-0.5"
+            >
+              {isBusiness ? '← Voltar para cadastro de Atleta' : 'Assessoria? Cadastre-se aqui →'}
+            </button>
+          </div>
+        )}
+
+        {/* Version Info */}
+        <div className="mt-8 text-center">
+          <p className="text-[10px] text-gray-600 font-mono tracking-wider">v1.2.0 • TERRITORY RUN</p>
         </div>
+
       </div>
     </div >
+  );
   );
 };
 

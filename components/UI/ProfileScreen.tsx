@@ -1,7 +1,7 @@
 import React from 'react';
 import { User, Territory } from '../../types';
 import { calculateLevel } from '../../utils/starSystem';
-import { Star, MapPin, TrendingUp, Award, X, LogOut, Lock, Users, Crown } from 'lucide-react';
+import { Star, MapPin, TrendingUp, Award, X, LogOut, Lock, Users, Crown, RefreshCw } from 'lucide-react';
 
 interface ProfileScreenProps {
     user: User;
@@ -46,86 +46,119 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const level = calculateLevel(totalStars);
 
     return (
-        <div className="fixed inset-0 z-[10000] bg-zinc-950/98 backdrop-blur-xl text-white overflow-y-auto animate-in slide-in-from-bottom duration-300 font-sans">
-            {/* Close Button */}
-            {/* Close Button - Fixed Position explicitly high z-index */}
-            {/* Close Button - Fixed Position - Lower to avoid safe areas */}
-            <button
-                onClick={onClose}
-                className="fixed top-12 right-6 z-[20000] p-4 rounded-full bg-red-600/90 border-2 border-white/20 text-white shadow-2xl flex items-center justify-center active:scale-90 transition-transform"
-                style={{ boxShadow: '0 0 20px rgba(0,0,0,0.8)' }}
-                aria-label="Fechar"
-            >
-                <X size={32} strokeWidth={3} />
-            </button>
+        <div className="fixed inset-0 z-[10000] bg-gradient-to-br from-zinc-950 via-black to-zinc-900 text-white overflow-y-auto animate-in slide-in-from-bottom duration-300 font-sans">
 
-            {/* Header / Top Bar for Profile */}
-            <div className="relative h-56 flex flex-col items-center justify-center p-6 border-b border-white/5 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gold-600/20 via-black to-black">
-                <button
-                    onClick={onClose}
-                    className="absolute top-6 right-6 w-10 h-10 bg-surface-dark border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors z-20"
-                >
-                    <X size={20} />
-                </button>
-
-                <div className="relative w-28 h-28 mb-4">
-                    <div className="absolute inset-0 bg-gold-500 blur-xl opacity-30 rounded-full animate-pulse"></div>
-                    <div className="w-full h-full rounded-full p-1 bg-gradient-to-br from-gold-300 to-gold-600 relative z-10">
-                        <div className="w-full h-full rounded-full bg-black overflow-hidden border-4 border-black flex items-center justify-center">
-                            {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" /> : <Users size={40} className="text-gray-600" />}
-                        </div>
-                    </div>
-                    <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-gold-500 to-yellow-600 w-10 h-10 rounded-full flex items-center justify-center border-4 border-black z-20 shadow-lg">
-                        <Crown size={16} className="text-black" />
-                    </div>
-                </div>
-
-                <h2 className="text-3xl font-black text-white tracking-wide mb-1">{user.name}</h2>
-                <div className="flex items-center space-x-3 mt-1">
-                    <span className="text-gold-400 font-bold text-sm flex items-center bg-gold-500/10 px-4 py-1.5 rounded-full border border-gold-500/20">
-                        <Star size={12} className="mr-1.5 fill-gold-500" />
-                        Nível {level}
-                    </span>
-                    <span className="text-gray-500 text-xs font-mono tracking-wider">MEMBRO DESDE {new Date().getFullYear()}</span>
-                </div>
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-gold-500/5 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-gold-600/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
             </div>
 
-            {/* Content Container */}
-            <div className="relative px-4 -mt-8 z-20 pb-32 max-w-md mx-auto">
+            {/* Close Button */}
+            <button
+                onClick={onClose}
+                className="fixed top-6 right-6 z-[20000] p-3 rounded-full bg-red-600/90 border-2 border-white/20 text-white shadow-2xl flex items-center justify-center active:scale-90 transition-transform"
+                aria-label="Fechar"
+            >
+                <X size={28} strokeWidth={3} />
+            </button>
 
-                {/* Actions Grid */}
-                <div className="bg-surface-dark/95 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl p-4 mb-6 grid grid-cols-4 gap-2">
-                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group" onClick={() => setShowAdminLogin(!showAdminLogin)}>
-                        <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all mb-2">
-                            <Lock size={20} />
-                        </div>
-                        <span className="text-[10px] font-bold text-gray-500 group-hover:text-gray-300">ADMIN</span>
-                    </div>
-                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group" onClick={onShowLeaderboard}>
-                        <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white group-hover:bg-white/10 transition-all mb-2 border border-white/10">
-                            <Award size={20} />
-                        </div>
-                        <span className="text-[10px] font-bold text-gray-500 group-hover:text-white">RANK</span>
-                    </div>
-                    {/* Team Icon - Only show for owners */}
-                    {user.role === 'owner' && onViewTeam && (
-                        <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group" onClick={onViewTeam}>
-                            <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white group-hover:bg-white/10 transition-all mb-2 border border-white/10">
-                                <Users size={20} />
+            {/* Content */}
+            <div className="relative z-10 w-full px-6 py-12 max-w-lg mx-auto">
+
+                {/* Header / Player Card */}
+                <div className="relative mb-8 text-center">
+                    {/* Avatar */}
+                    <div className="relative w-32 h-32 mx-auto mb-4">
+                        <div className="absolute inset-0 bg-gold-500 blur-2xl opacity-40 rounded-full animate-pulse"></div>
+                        <div className="w-full h-full rounded-full p-1 bg-gradient-to-br from-gold-400 to-gold-600 relative z-10">
+                            <div className="w-full h-full rounded-full bg-black overflow-hidden border-4 border-black flex items-center justify-center">
+                                {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt="Avatar" /> : <Users size={48} className="text-gray-600" />}
                             </div>
-                            <span className="text-[10px] font-bold text-gray-500 group-hover:text-white">EQUIPE</span>
                         </div>
-                    )}
-                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group" onClick={onLogout}>
-                        <div className="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 group-hover:bg-red-500/20 transition-all mb-2 border border-red-500/20">
-                            <LogOut size={20} />
+                        <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-gold-500 to-yellow-600 w-12 h-12 rounded-full flex items-center justify-center border-4 border-black z-20 shadow-lg">
+                            <Crown size={20} className="text-black" />
                         </div>
-                        <span className="text-[10px] font-bold text-gray-500 group-hover:text-red-500">SAIR</span>
+                    </div>
+
+                    {/* Name & Level */}
+                    <h2 className="text-4xl font-black text-white tracking-tight mb-2">{user.name}</h2>
+                    <div className="flex items-center justify-center space-x-3">
+                        <span className="text-gold-400 font-bold text-sm flex items-center bg-gold-500/10 px-4 py-1.5 rounded-full border border-gold-500/30 backdrop-blur-sm">
+                            <Star size={14} className="mr-1.5 fill-gold-500" />
+                            Nível {level}
+                        </span>
+                        <span className="text-gray-500 text-xs font-mono tracking-wider">MEMBRO {new Date().getFullYear()}</span>
                     </div>
                 </div>
 
+                {/* Stats Cards - Horizontal Scroll */}
+                <div className="mb-8">
+                    <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <TrendingUp size={14} className="text-gold-500" />
+                        Performance
+                    </h3>
+                    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory">
+                        {/* Stars */}
+                        <div className="flex-shrink-0 w-40 bg-gradient-to-br from-gold-500/10 to-gold-600/5 backdrop-blur-sm p-5 rounded-2xl border border-gold-500/20 snap-center shadow-lg">
+                            <Star className="text-gold-400 mb-2" size={24} />
+                            <span className="block text-4xl font-black text-white mb-1">{totalStars}</span>
+                            <span className="text-xs uppercase text-gray-400 font-bold tracking-wider">Estrelas</span>
+                        </div>
+                        {/* Territories */}
+                        <div className="flex-shrink-0 w-40 bg-white/5 backdrop-blur-sm p-5 rounded-2xl border border-white/10 snap-center shadow-lg">
+                            <MapPin className="text-blue-400 mb-2" size={24} />
+                            <span className="block text-4xl font-black text-white mb-1">{totalTerritories}</span>
+                            <span className="text-xs uppercase text-gray-400 font-bold tracking-wider">Territórios</span>
+                        </div>
+                        {/* Distance */}
+                        <div className="flex-shrink-0 w-40 bg-white/5 backdrop-blur-sm p-5 rounded-2xl border border-white/10 snap-center shadow-lg">
+                            <TrendingUp className="text-green-400 mb-2" size={24} />
+                            <span className="block text-4xl font-black text-white mb-1">{totalDistance.toFixed(1)}</span>
+                            <span className="text-xs uppercase text-gray-400 font-bold tracking-wider">KM Totais</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Actions Grid */}
+                <div className="mb-8">
+                    <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <Award size={14} className="text-gold-500" />
+                        Ações
+                    </h3>
+                    <div className="grid grid-cols-4 gap-3">
+                        <button onClick={() => setShowAdminLogin(!showAdminLogin)} className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group">
+                            <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all mb-2 border border-white/10">
+                                <Lock size={22} />
+                            </div>
+                            <span className="text-[10px] font-bold text-gray-500 group-hover:text-gray-300">ADMIN</span>
+                        </button>
+                        <button onClick={onShowLeaderboard} className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group">
+                            <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center text-white group-hover:bg-white/10 transition-all mb-2 border border-white/10">
+                                <Award size={22} />
+                            </div>
+                            <span className="text-[10px] font-bold text-gray-500 group-hover:text-white">RANK</span>
+                        </button>
+                        {user.role === 'owner' && onViewTeam && (
+                            <button onClick={onViewTeam} className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group">
+                                <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center text-white group-hover:bg-white/10 transition-all mb-2 border border-white/10">
+                                    <Users size={22} />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-500 group-hover:text-white">EQUIPE</span>
+                            </button>
+                        )}
+                        <button onClick={onLogout} className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group">
+                            <div className="w-14 h-14 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 group-hover:bg-red-500/20 transition-all mb-2 border border-red-500/20">
+                                <LogOut size={22} />
+                            </div>
+                            <span className="text-[10px] font-bold text-gray-500 group-hover:text-red-500">SAIR</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Admin Login */}
                 {showAdminLogin && (
-                    <div className="mb-6 p-4 bg-surface-dark/95 backdrop-blur-md rounded-xl flex animate-pulse border border-white/10 shadow-lg">
+                    <div className="mb-6 p-4 bg-white/5 backdrop-blur-md rounded-xl flex animate-in slide-in-from-top border border-white/10 shadow-lg">
                         <input
                             type="password"
                             placeholder="Senha de acesso"
@@ -137,61 +170,21 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                     </div>
                 )}
 
-                <div className="space-y-6">
-
-                    {/* Stats Cards */}
-                    <section>
-                        <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2 px-1">
-                            <TrendingUp size={14} className="text-gold-500" />
-                            Performence
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-surface-dark/95 backdrop-blur-sm p-4 rounded-2xl border border-white/10 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-16 h-16 bg-gold-500/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                                <span className="block text-3xl font-black text-white mb-1 group-hover:text-gold-400 transition-colors">{totalTerritories}</span>
-                                <span className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Territórios</span>
-                            </div>
-                            <div className="bg-surface-dark/95 backdrop-blur-sm p-4 rounded-2xl border border-white/10 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                                <span className="block text-3xl font-black text-white mb-1 group-hover:text-gold-400 transition-colors">{totalDistance.toFixed(1)}</span>
-                                <span className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">KM Totais</span>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Achievements */}
-                    <section>
-                        <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2 px-1">
-                            <Award size={14} className="text-gold-500" />
-                            Conquistas
-                        </h3>
-                        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-                            {[
-                                { name: 'Iniciante', icon: '🏁', active: true },
-                                { name: 'Explorador', icon: '🌍', active: totalTerritories >= 5 },
-                                { name: 'Conquistador', icon: '👑', active: totalTerritories >= 10 },
-                                { name: 'Lenda', icon: '🔥', active: level >= 10 },
-                            ].map((ach, i) => (
-                                <div key={i} className={`flex-shrink-0 w-24 h-28 rounded-xl flex flex-col items-center justify-center p-2 text-center border transition-all ${ach.active ? 'border-gold-500/30 bg-surface-dark/95 backdrop-blur-sm shadow-[0_4px_20px_rgba(0,0,0,0.3)]' : 'border-dashed border-white/5 bg-white/5 opacity-50 grayscale'}`}>
-                                    <span className="text-3xl mb-3 drop-shadow-md transform group-hover:scale-110 transition-transform">{ach.icon}</span>
-                                    <span className={`text-[10px] font-bold uppercase tracking-wide ${ach.active ? 'text-gold-400' : 'text-gray-600'}`}>{ach.name}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    {/* Territories List */}
-                    <section className="pb-8">
-                        <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2 px-1">
-                            <MapPin size={14} className="text-gold-500" />
-                            Meus Territórios
-                        </h3>
-
-                        <div className="space-y-3">
-                            {myTerritories.map(t => (
+                {/* Territories List */}
+                <div className="mb-8">
+                    <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <MapPin size={14} className="text-gold-500" />
+                        Meus Territórios ({totalTerritories})
+                    </h3>
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {myTerritories.length === 0 ? (
+                            <p className="text-gray-500 text-sm text-center py-8">Nenhum território conquistado ainda.</p>
+                        ) : (
+                            myTerritories.map(t => (
                                 <button
                                     key={t.id}
-                                    className="w-full bg-surface-dark/95 backdrop-blur-sm p-4 rounded-xl border border-white/10 flex items-center justify-between hover:border-gold-500/30 active:scale-[0.98] transition-all text-left group shadow-lg"
+                                    onClick={() => onTerritoryClick?.(t.id)}
+                                    className="w-full bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 flex items-center justify-between hover:border-gold-500/30 active:scale-[0.98] transition-all text-left group shadow-lg"
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-full bg-black/50 border border-white/5 flex items-center justify-center text-lg shadow-inner">📍</div>
@@ -200,22 +193,25 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                             <span className="text-[10px] text-gray-500 font-mono tracking-wide">{new Date(t.conqueredAt).toLocaleDateString()} • {t.area}m²</span>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col items-end">
-                                        <span className="font-black text-white group-hover:text-gold-400 transition-colors">{t.value}PTS</span>
-                                        <span className="text-[9px] text-gray-600 uppercase font-bold tracking-wider mt-1">Ver Mapa</span>
-                                    </div>
+                                    <Star className="text-gold-500 fill-gold-500" size={16} />
                                 </button>
-                            ))}
-                            {myTerritories.length === 0 && (
-                                <div className="text-center py-10 opacity-50 bg-surface-dark/95 backdrop-blur-sm rounded-xl border border-dashed border-white/10">
-                                    <MapPin size={32} className="mx-auto mb-3 text-gray-600" />
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Nenhum território<br />conquistado ainda.</p>
-                                </div>
-                            )}
-                        </div>
-                    </section>
-
+                            ))
+                        )}
+                    </div>
                 </div>
+
+                {/* Force Update Button */}
+                <div className="text-center pb-8 border-t border-white/10 pt-6">
+                    <p className="text-gray-600 text-[10px] uppercase tracking-widest mb-3 font-mono">Versão 1.2.0</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wide transition-colors border border-white/10 flex items-center gap-2 mx-auto"
+                    >
+                        <RefreshCw size={14} />
+                        Forçar Atualização
+                    </button>
+                </div>
+
             </div>
         </div>
     );

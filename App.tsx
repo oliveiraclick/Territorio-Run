@@ -964,6 +964,6 @@ export default function App() {
         />
       )}
 
-    </div>
+    </AppShell>
   );
 }
