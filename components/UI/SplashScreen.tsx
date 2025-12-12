@@ -46,7 +46,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       </div>
 
       <div className="absolute bottom-4 right-4 text-white/30 text-[10px] font-mono tracking-widest z-50">
-        v1.2.0
+        v1.3.0
       </div>
     </div>
   );

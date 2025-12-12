@@ -291,7 +291,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
 
         {/* Version Info */}
         <div className="mt-6 text-center">
-          <p className="text-[10px] text-gray-600 font-mono tracking-wider">v1.2.0 • TERRITORY RUN</p>
+          <p className="text-[10px] text-gray-600 font-mono tracking-wider">v1.3.0 • TERRITORY RUN</p>
         </div>
 
       </div>

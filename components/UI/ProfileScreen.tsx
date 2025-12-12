@@ -209,7 +209,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
                 {/* Version Footer */}
                 <div className="text-center pt-4 border-t border-white/10">
-                    <p className="text-gray-600 text-[9px] uppercase tracking-widest font-mono">Versão 1.2.0</p>
+                    <p className="text-gray-600 text-[9px] uppercase tracking-widest font-mono">Versão 1.3.0</p>
                 </div>
 
             </div>
