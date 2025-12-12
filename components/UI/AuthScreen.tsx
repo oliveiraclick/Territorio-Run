@@ -263,7 +263,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all mt-5 ${loading ? 'bg-gray-700 cursor-not-allowed text-gray-500' : 'bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-400 hover:to-yellow-400 text-black active:scale-95'}`}
+            className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all mt-5 ${loading ? 'bg-gray-600 cursor-not-allowed text-white' : 'bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-400 hover:to-yellow-400 text-black active:scale-95'}`}
           >
             {loading ? (
               <span>Carregando...</span>
