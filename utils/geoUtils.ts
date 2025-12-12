@@ -28,6 +28,10 @@ function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon
   return d;
 }
 
+export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  return getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2);
+};
+
 function deg2rad(deg: number) {
   return deg * (Math.PI / 180);
 }

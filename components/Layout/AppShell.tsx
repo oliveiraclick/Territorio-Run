@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Menu, Trophy, Map, Users, Zap, LayoutDashboard } from 'lucide-react';
+import { User, Menu, Trophy, Map, Users, Zap, LayoutDashboard, Compass } from 'lucide-react';
 
 interface AppShellProps {
     children: React.ReactNode;
@@ -58,31 +58,40 @@ export const AppShell: React.FC<AppShellProps> = ({
             </div>
 
             {/* --- BOTTOM NAVIGATION (Fixed Dock) --- */}
-            <div className="z-50 bg-surface-dark border-t border-white/5 pb-safe-bottom">
+            <div className="z-50 bg-surface-dark/95 backdrop-blur-md border-t border-white/10 pb-safe-bottom shadow-lg">
                 <div className="flex justify-around items-center px-2 py-2">
                     {/* 1. Map/Play */}
                     <NavButton
                         icon={<Map size={20} />}
                         label="Mapa"
-                        onClick={() => { }}
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                         active={true}
                     />
 
-                    {/* 2. Team */}
-                    <NavButton
-                        icon={<Users size={20} />}
-                        label="Equipe"
-                        onClick={onTeamClick}
-                        active={false}
-                    />
+                    {/* 2. Team (Owner) or Explore (Others) */}
+                    {user?.role === 'owner' ? (
+                        <NavButton
+                            icon={<Users size={20} />}
+                            label="Equipe"
+                            onClick={onTeamClick}
+                            active={false}
+                        />
+                    ) : (
+                        <NavButton
+                            icon={<Compass size={20} />}
+                            label="Explorar"
+                            onClick={() => alert('Explorar novidades em breve!')}
+                            active={false}
+                        />
+                    )}
 
                     {/* 3. MAIN ACTION (Start Run) - Gold Center */}
                     <div className="relative -top-6">
                         <button
                             onClick={isRunning ? onStopClick : onStartClick}
                             className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl border-4 border-dark-bg transition-all transform active:scale-95 ${isRunning
-                                    ? 'bg-red-600 shadow-red-900/50'
-                                    : 'bg-gradient-to-br from-gold-400 to-gold-600 shadow-gold-500/30'
+                                ? 'bg-red-600 shadow-red-900/50'
+                                : 'bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-yellow-500/30'
                                 }`}
                         >
                             {isRunning ? (

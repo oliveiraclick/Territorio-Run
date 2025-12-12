@@ -166,3 +166,15 @@ export interface Battle {
   winnerId?: string;
   betAmount?: number; // Apostas em estrelas
 }
+
+export interface Sponsor {
+  id: string;
+  name: string;
+  description?: string;
+  coordinates: Coordinate; // lat, lng
+  address?: string;
+  rewardStars: number;
+  discountMessage?: string; // "10% off no açaí"
+  logoUrl?: string;
+  qrCodeValue: string; // Secret token for QR
+}

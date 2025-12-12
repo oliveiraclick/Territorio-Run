@@ -1,6 +1,7 @@
 
 import { supabase } from './supabaseClient';
 import { Territory, User, Coordinate } from '../types';
+import { saveToOfflineQueue } from './offlineService';
 
 // Helper to save to local storage (Fallback)
 const saveLocal = (key: string, data: any) => {
@@ -194,6 +195,9 @@ export const createTerritory = async (territory: Territory): Promise<boolean> =>
   } catch (error) {
     console.warn("Supabase unavailable. Saving territory locally.");
 
+    // Add to offline queue for sync
+    saveToOfflineQueue({ type: 'conquest', payload: territory });
+
     // FALLBACK
     const current = getLocal('local_territories') || [];
     current.push(territory);
@@ -218,6 +222,12 @@ export const updateTerritoryOwner = async (territoryId: string, newOwnerId: stri
     return true;
   } catch (error) {
     console.warn("Supabase unavailable. Updating territory locally.");
+
+    // Add to offline queue for sync
+    saveToOfflineQueue({
+      type: 'update_owner',
+      payload: { territoryId, newOwnerId, newOwnerName, newColor }
+    });
 
     // FALLBACK
     const current = getLocal('local_territories') || [];

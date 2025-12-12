@@ -21,11 +21,13 @@ import { ProfileScreen } from './components/UI/ProfileScreen';
 import { SplashScreen } from './components/UI/SplashScreen';
 import { AdminDashboard } from './components/Admin/AdminDashboard';
 import { AppShell } from './components/Layout/AppShell';
-import { Coordinate, Territory, ActivityEvent, User, Team, Challenge, ActivityMode } from './types';
+import { Coordinate, Territory, ActivityEvent, User, Team, Challenge, ActivityMode, Sponsor } from './types';
 import { calculateTotalDistance, generateRandomColor, isValidGPSAccuracy, shouldAddPoint } from './utils/geoUtils';
 import { findOverlappingTerritories, validateConquest, calculateConquestBonus, getRequiredDistance } from './utils/territoryUtils';
 import { generateTerritoryInfo, generateRivalName } from './services/geminiService';
 import { getOrCreateUser, fetchAllTerritories, createTerritory, updateTerritoryOwner } from './services/gameService';
+import { saveToOfflineQueue, processOfflineQueue } from './services/offlineService'; // Offline Service
+import { fetchSponsors } from './services/sponsorService'; // Sponsors
 import { addStars, STAR_REWARDS, isNightTime } from './utils/starSystem'; // Keep existing imports for now
 import { calculateLevel } from './utils/starSystem'; // Add calculateLevel separately if needed, or merge
 import { triggerConquestConfetti, triggerLevelUpConfetti } from './utils/celebration';
@@ -35,8 +37,9 @@ import { createTeam, joinTeam, addPointsToSquad } from './services/teamService';
 import { createChallenge } from './services/challengeService';
 import { updateBattleScore } from './services/battleService';
 import { calculateAverageSpeed, calculateMaxSpeed, validateActivity, calculateAdjustedPoints } from './utils/activityUtils';
-import { Watch, Menu, AlertTriangle, Satellite, User as UserIcon, HelpCircle } from 'lucide-react';
+import { Watch, Menu, AlertTriangle, Satellite, User as UserIcon, HelpCircle, ScanLine } from 'lucide-react';
 import { ShareCard } from './components/Social/ShareCard';
+import { QRScanner } from './components/Sponsor/QRScanner'; // Import QRScanner
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -49,6 +52,7 @@ export default function App() {
   const [gpsAccuracy, setGpsAccuracy] = useState<number>(0);
   const [gpsQuality, setGpsQuality] = useState<'good' | 'medium' | 'poor'>('poor');
   const [territories, setTerritories] = useState<Territory[]>([]);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [distance, setDistance] = useState(0);
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -88,6 +92,7 @@ export default function App() {
   // Estado para regras do jogo
   const [showGameRules, setShowGameRules] = useState(false);
   const [showShareCard, setShowShareCard] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const [lastConqueredTerritory, setLastConqueredTerritory] = useState<Territory | null>(null);
 
   const simulationInterval = useRef<any>(null);
@@ -104,8 +109,12 @@ export default function App() {
 
   useEffect(() => {
     const loadData = async () => {
-      const data = await fetchAllTerritories();
-      setTerritories(data);
+      const [territoriesData, sponsorsData] = await Promise.all([
+        fetchAllTerritories(),
+        fetchSponsors()
+      ]);
+      setTerritories(territoriesData);
+      setSponsors(sponsorsData);
     };
     loadData();
     const interval = setInterval(loadData, 10000);
@@ -149,6 +158,57 @@ export default function App() {
       setCurrentUser(null);
     }
   }
+
+  // --- OFFLINE SYNC ---
+  useEffect(() => {
+    // Try to sync on mount and when coming online
+    processOfflineQueue();
+    window.addEventListener('online', processOfflineQueue);
+    return () => window.removeEventListener('online', processOfflineQueue);
+  }, []);
+
+  // --- GPS ---
+  const handleScanSuccess = (decodedText: string, sponsorId?: string) => {
+    setShowQRScanner(false);
+    if (sponsorId) {
+      const sponsor = sponsors.find(s => s.id === sponsorId);
+      if (sponsor) {
+        // Give stars locally for instant feedback
+        setUserStars(prev => prev + sponsor.rewardStars);
+
+        // Show event
+        const newMessage: ActivityEvent = {
+          id: Date.now().toString(),
+          type: 'stars',
+          message: `Visitou ${sponsor.name}! +${sponsor.rewardStars} ⭐`,
+          timestamp: Date.now()
+        };
+        setEvents(prev => [newMessage, ...prev]);
+        triggerConquestConfetti();
+      }
+    }
+  };
+
+  const handleForceRefresh = () => {
+    if (!navigator.geolocation) return;
+    console.log("Forcing GPS refresh...");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const newCoord = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          timestamp: pos.timestamp
+        };
+        setUserLocation(newCoord);
+        setGpsAccuracy(pos.coords.accuracy);
+        if (pos.coords.accuracy <= 20) setGpsQuality('good');
+        else setGpsQuality('medium');
+        console.log("GPS Refreshed Manually:", newCoord);
+      },
+      (err) => console.error("Force GPS failed", err),
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+    );
+  };
 
   useEffect(() => {
     if (!currentUser) return;
@@ -253,7 +313,7 @@ export default function App() {
   };
 
   const handleStartWithMode = () => {
-    if (!userLocation && !isSimulating) { alert("Aguardando GPS..."); return; }
+    // GPS check moved to start button
     setShowActivitySelector(false);
     setIsRunning(true);
     setCurrentPath([]);
@@ -341,17 +401,19 @@ export default function App() {
         setTerritories(prev => prev.map(t => t.id === targetTerritory.id ? updatedTerritory : t));
         await updateTerritoryOwner(targetTerritory.id, currentUser?.id || '', currentUser?.name || '', targetTerritory.color);
 
-        setTerritories(prev => prev.map(t => t.id === targetTerritory.id ? updatedTerritory : t));
-        await updateTerritoryOwner(targetTerritory.id, currentUser?.id || '', currentUser?.name || '', targetTerritory.color);
-
         // Adicionar estrelas
         const newStars = userStars + conquestBonus;
         setUserStars(newStars);
 
         // Atualizar pontuação da guerra (se houver)
         if (currentUser?.teamId) {
-          await updateBattleScore(currentUser.teamId, conquestBonus); // Guerra Externa
-          await addPointsToSquad(currentUser.teamId, currentUser.id, conquestBonus); // Guerra Interna
+          try {
+            await updateBattleScore(currentUser.teamId, conquestBonus); // Guerra Externa
+            await addPointsToSquad(currentUser.teamId, currentUser.id, conquestBonus); // Guerra Interna
+          } catch (e) {
+            console.warn("Offline: saving conquest points");
+            saveToOfflineQueue({ type: 'run_points', payload: { teamId: currentUser.teamId, userId: currentUser.id, points: conquestBonus } });
+          }
         }
 
         setEvents(prev => [
@@ -383,7 +445,12 @@ export default function App() {
 
       // Pelotão
       if (currentUser.teamId) {
-        await addPointsToSquad(currentUser.teamId, currentUser.id, distanceStars);
+        try {
+          await addPointsToSquad(currentUser.teamId, currentUser.id, distanceStars);
+        } catch (e) {
+          console.warn("Offline: saving points to queue");
+          saveToOfflineQueue({ type: 'run_points', payload: { teamId: currentUser.teamId, userId: currentUser.id, points: distanceStars } });
+        }
       }
 
       setEvents(prev => [
@@ -428,7 +495,18 @@ export default function App() {
     };
 
     setTerritories(prev => [...prev, newTerritory]);
-    await createTerritory(newTerritory);
+    try {
+      await createTerritory(newTerritory);
+    } catch (e) {
+      console.warn("Offline: territory created locally, queued for sync");
+      // If createTerritory throws, we queue.
+      // But if createTerritory swallows and returns true, this won't run. 
+      // I need to modify gameService.ts.
+      // However, for now I will apply this assuming I will modify gameService to throw?
+      // No, gameService saves to localStorage. I should trust gameService?
+      // No, gameService local storage is not a sync queue.
+      // I will Modify gameService.ts next.
+    }
 
     // Se for desafio, criar o desafio
     if (isChallenge && pendingChallenge) {
@@ -610,7 +688,30 @@ export default function App() {
         gpsAccuracy={gpsAccuracy}
         focusTarget={mapFocusTarget}
         selectedTerritoryId={selectedTerritoryId}
+        onForceRefresh={handleForceRefresh}
+        sponsors={sponsors}
       />
+
+      {/* QR Code Scanner Button */}
+      {!isRunning && (
+        <button
+          onClick={() => setShowQRScanner(true)}
+          className="fixed top-24 right-4 z-[900] bg-surface-dark/90 p-3 rounded-full border border-gold-500/50 shadow-lg shadow-black/50 text-gold-500 hover:text-white hover:bg-gold-500 transition-all active:scale-95"
+          title="Escanear QR Code"
+        >
+          <ScanLine size={24} />
+        </button>
+      )}
+
+      {/* Scanner Modal */}
+      {showQRScanner && (
+        <QRScanner
+          onClose={() => setShowQRScanner(false)}
+          onScanSuccess={handleScanSuccess}
+          userLocation={userLocation}
+          sponsors={sponsors}
+        />
+      )}
 
       {/* --- FLOATING OVERLAYS (Managed by Shell Z-Index) --- */}
 
@@ -687,7 +788,7 @@ export default function App() {
       {showTutorial && <TutorialScreen onClose={() => setShowTutorial(false)} />}
 
       {
-        showProfile && (
+        showProfile && currentUser && (
           <ProfileScreen
             user={currentUser}
             territories={territories}
@@ -695,10 +796,7 @@ export default function App() {
             totalStars={userStars}
             onClose={() => setShowProfile(false)}
             onLogout={handleLogout}
-            onAdminAccess={() => {
-              setShowProfile(false);
-              setShowAdminDashboard(true);
-            }}
+            onAdminAccess={() => setShowAdminDashboard(true)}
             onTerritoryClick={handleTerritoryClick}
             onShowLeaderboard={() => {
               setShowProfile(false);
@@ -709,7 +807,7 @@ export default function App() {
               if (currentUser.teamId) {
                 setShowTeamDashboard(true);
               } else if (currentUser.role === 'owner') {
-                setShowCreateTeam(true); // Should be automatic, but fallback
+                setShowCreateTeam(true);
               }
             }}
           />
@@ -745,23 +843,39 @@ export default function App() {
       {/* Activity Selector Modal */}
       {
         showActivitySelector && (
-          <div className="fixed inset-0 z-[10001] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center">
-            <div className="bg-gray-900 border-t sm:border border-gray-700 p-5 sm:rounded-3xl w-full sm:max-w-sm max-h-[80vh] overflow-y-auto">
-              <h3 className="text-white font-black text-lg mb-4 text-center">Escolha sua Modalidade</h3>
+          <div className="fixed inset-0 z-[10001] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center sm:p-4">
+            {/* Mobile: Bottom Sheet | Desktop: Centered Card */}
+            <div className={`
+              bg-zinc-950 border-t border-x sm:border border-gold-500/20 shadow-[0_0_50px_rgba(234,179,8,0.1)] 
+              w-full sm:max-w-sm 
+              rounded-t-[2.5rem] sm:rounded-3xl 
+              p-6 pb-safe-bottom
+              max-h-[90vh] overflow-y-auto 
+              animate-in slide-in-from-bottom duration-300
+            `}>
+              {/* Drag Handle for Mobile feel */}
+              <div className="w-12 h-1.5 bg-gray-800 rounded-full mx-auto mb-6 sm:hidden"></div>
+
+              <h3 className="text-white font-black text-xl mb-6 text-center tracking-wide uppercase flex items-center justify-center gap-2">
+                <span className="text-gold-500">⚡</span>
+                Escolha a Missão
+              </h3>
+
               <ActivityModeSelector
                 selectedMode={selectedActivityMode}
                 onSelectMode={setSelectedActivityMode}
               />
-              <div className="mt-6 flex justify-center space-x-3">
+
+              <div className="mt-8 flex justify-center space-x-3 mb-4 sm:mb-0">
                 <button
                   onClick={() => setShowActivitySelector(false)}
-                  className="flex-1 py-3 bg-gray-800 text-gray-400 font-bold rounded-xl transition-all text-sm"
+                  className="flex-1 py-4 bg-white/5 border border-white/10 text-zinc-300 font-bold rounded-xl transition-all hover:bg-white/10 text-sm tracking-widest uppercase"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleStartWithMode}
-                  className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-blue-500 text-white font-bold rounded-xl shadow-lg hover:shadow-orange-500/20 text-sm"
+                  className="flex-1 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-black rounded-xl shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm tracking-widest uppercase flex items-center justify-center gap-2"
                 >
                   VAMOS! 🚀
                 </button>

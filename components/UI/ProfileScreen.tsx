@@ -46,7 +46,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const level = calculateLevel(totalStars);
 
     return (
-        <div className="fixed inset-0 z-[10000] bg-dark-bg text-white overflow-y-auto animate-in slide-in-from-bottom duration-300 font-sans">
+        <div className="fixed inset-0 z-[10000] bg-zinc-950/98 backdrop-blur-xl text-white overflow-y-auto animate-in slide-in-from-bottom duration-300 font-sans">
+            {/* Close Button */}
+            {/* Close Button - Fixed Position explicitly high z-index */}
+            <button
+                onClick={onClose}
+                className="fixed top-6 right-6 z-[20000] p-3 rounded-full bg-zinc-900 border-2 border-white/10 text-white hover:bg-zinc-800 hover:border-white/30 shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-all active:scale-95 flex items-center justify-center"
+                aria-label="Fechar"
+            >
+                <X size={26} strokeWidth={2.5} />
+            </button>
 
             {/* Header / Top Bar for Profile */}
             <div className="relative h-56 flex flex-col items-center justify-center p-6 border-b border-white/5 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gold-600/20 via-black to-black">

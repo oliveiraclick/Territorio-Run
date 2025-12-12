@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Polyline, Polygon, Circle, useMap, Popup, Marker } from 'react-leaflet';
 import L from 'leaflet';
-import { Coordinate, Territory } from '../../types';
-import { LocateFixed, Satellite, User, Trophy } from 'lucide-react';
+import { Coordinate, Territory, Sponsor } from '../../types';
+import { LocateFixed, Satellite, User, Trophy, Store } from 'lucide-react';
 
 // Fix for default Leaflet marker icons in React
 const DefaultIcon = L.icon({
@@ -21,12 +21,15 @@ interface GameMapProps {
   gpsAccuracy?: number;
   focusTarget?: Coordinate | null; // New prop to force map center
   selectedTerritoryId?: string | null;
+  onForceRefresh?: () => void;
+  sponsors?: Sponsor[];
 }
 
 // Component to recenter map when user moves, with manual override option
-const MapController = ({ location, focusTarget }: { location: Coordinate | null, focusTarget: Coordinate | null }) => {
+const MapController = ({ location, focusTarget, onForceRefresh }: { location: Coordinate | null, focusTarget: Coordinate | null, onForceRefresh?: () => void }) => {
   const map = useMap();
   const [shouldAutoCenter, setShouldAutoCenter] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const ZOOM_LEVEL = 17; // Reduced zoom level for better visibility
 
   // Force center on first valid location load OR if distance is too large (fix for "Wrong Location")
@@ -79,21 +82,55 @@ const MapController = ({ location, focusTarget }: { location: Coordinate | null,
     }
   };
 
+  const handleRefreshGPS = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onForceRefresh) {
+      setIsRefreshing(true);
+      // Visual feedback only, standard timeout to reset
+      setTimeout(() => setIsRefreshing(false), 2000);
+      onForceRefresh();
+    }
+  }
+
   return (
-    <button
-      onClick={handleRecenter}
-      className={`absolute bottom-32 right-4 z-[400] p-3 rounded-full shadow-lg border transition-all duration-300 ${shouldAutoCenter
-        ? "bg-gray-900/50 text-neon-green border-neon-green/50"
-        : "bg-neon-red text-white border-neon-red animate-pulse shadow-[0_0_10px_rgba(255,7,58,0.5)]"
-        }`}
-      title="Centralizar em mim"
-    >
-      <LocateFixed size={24} />
-    </button>
+    <>
+      {/* Force GPS Refresh Button */}
+      <button
+        onClick={handleRefreshGPS}
+        className={`absolute bottom-48 right-4 z-[400] p-3 rounded-full shadow-lg border transition-all duration-300 ${isRefreshing
+          ? "bg-blue-600 text-white border-blue-400 animate-spin"
+          : "bg-zinc-800 text-gold-500 border-gold-500/50 hover:bg-zinc-700"
+          }`}
+        title="Buscar Satélite agora"
+      >
+        <Satellite size={24} className={isRefreshing ? "animate-pulse" : ""} />
+      </button>
+
+      {/* Recenter Button */}
+      <button
+        onClick={handleRecenter}
+        className={`absolute bottom-32 right-4 z-[400] p-3 rounded-full shadow-lg border transition-all duration-300 ${shouldAutoCenter
+          ? "bg-gray-900/50 text-neon-green border-neon-green/50"
+          : "bg-neon-red text-white border-neon-red animate-pulse shadow-[0_0_10px_rgba(255,7,58,0.5)]"
+          }`}
+        title="Centralizar em mim"
+      >
+        <LocateFixed size={24} />
+      </button>
+    </>
   );
 };
 
-const GameMap: React.FC<GameMapProps> = ({ currentPath, territories, userLocation, gpsAccuracy = 0, focusTarget = null, selectedTerritoryId = null }) => {
+const sponsorIcon = L.divIcon({
+  html: `<div class="bg-yellow-500 rounded-full p-1.5 border-2 border-white shadow-lg flex items-center justify-center w-8 h-8">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
+         </div>`,
+  className: 'bg-transparent',
+  iconSize: [32, 32],
+  iconAnchor: [16, 16]
+});
+
+const GameMap: React.FC<GameMapProps> = ({ currentPath, territories, userLocation, gpsAccuracy = 0, focusTarget = null, selectedTerritoryId = null, onForceRefresh, sponsors = [] }) => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -149,7 +186,7 @@ const GameMap: React.FC<GameMapProps> = ({ currentPath, territories, userLocatio
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
 
-        <MapController location={userLocation} focusTarget={focusTarget} />
+        <MapController location={userLocation} focusTarget={focusTarget} onForceRefresh={onForceRefresh} />
 
         {/* Existing Territories */}
         {territories.map((terr) => (
@@ -232,7 +269,44 @@ const GameMap: React.FC<GameMapProps> = ({ currentPath, territories, userLocatio
           </React.Fragment>
         ))}
 
-        {/* Current Run Path */}
+        {/* Sponsors */}
+        {sponsors.map(s => (
+          <Marker
+            key={s.id}
+            position={[s.coordinates.lat, s.coordinates.lng]}
+            icon={sponsorIcon}
+          >
+            <Popup>
+              <div className="font-sans text-center min-w-[150px]">
+                <div className="flex items-center justify-center mb-2 bg-gold-100 p-2 rounded-full w-10 h-10 mx-auto">
+                  <Store size={20} className="text-gold-600" />
+                </div>
+                <h3 className="font-bold text-lg text-black">{s.name}</h3>
+
+                <div className="bg-black text-gold-500 font-black text-xs py-1 px-2 rounded-lg my-2 inline-block">
+                  +{s.rewardStars} ⭐ RECOMPENSA
+                </div>
+
+                {s.discountMessage && (
+                  <div className="border border-green-500 bg-green-50 p-2 rounded-lg mb-2">
+                    <p className="font-bold text-xs text-green-700">{s.discountMessage}</p>
+                  </div>
+                )}
+
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${s.coordinates.lat},${s.coordinates.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gold-500 hover:bg-gold-600 text-white text-xs font-bold py-2 px-4 rounded-full block mt-2 transition-colors no-underline"
+                >
+                  IR ATÉ LÁ 📍
+                </a>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+
+        {/* Rota atual - Linha dourada brilhante */}
         {currentPath.length > 0 && (
           <Polyline
             positions={currentPath.map(c => [c.lat, c.lng])}
@@ -246,7 +320,7 @@ const GameMap: React.FC<GameMapProps> = ({ currentPath, territories, userLocatio
             {/* GPS Accuracy Circle */}
             <Circle
               center={[userLocation.lat, userLocation.lng]}
-              pathOptions={{ fillColor: '#00e5ff', fillOpacity: 0.05, stroke: true, weight: 1, color: '#00e5ff', opacity: 0.2 }}
+              pathOptions={{ fillColor: '#f59e0b', fillOpacity: 0.1, stroke: true, weight: 1, color: '#f59e0b', opacity: 0.3 }}
               radius={Math.max(gpsAccuracy, 10)} // Ensure visible
             />
 
