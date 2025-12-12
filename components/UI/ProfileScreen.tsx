@@ -1,7 +1,7 @@
 import React from 'react';
 import { User, Territory } from '../../types';
 import { calculateLevel } from '../../utils/starSystem';
-import { Star, MapPin, TrendingUp, Award, X, LogOut, Lock, Users, Crown, RefreshCw } from 'lucide-react';
+import { Star, MapPin, TrendingUp, Award, X, LogOut, Lock, Users, Crown, RefreshCw, Zap } from 'lucide-react';
 
 interface ProfileScreenProps {
     user: User;
@@ -46,13 +46,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const level = calculateLevel(totalStars);
 
     return (
-        <div className="fixed inset-0 z-[10000] bg-gradient-to-br from-zinc-950 via-black to-zinc-900 text-white overflow-y-auto animate-in slide-in-from-bottom duration-300 font-sans">
+        <div className="fixed inset-0 z-[10000] bg-black text-white overflow-y-auto font-sans">
 
-            {/* Animated Background Elements */}
-            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-gold-500/5 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-gold-600/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-            </div>
+            {/* Subtle Background Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 via-black to-black opacity-50"></div>
 
             {/* Close Button */}
             <button
@@ -64,152 +61,154 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             </button>
 
             {/* Content */}
-            <div className="relative z-10 w-full px-6 py-12 max-w-lg mx-auto">
+            <div className="relative z-10 w-full px-5 py-8 max-w-md mx-auto">
 
-                {/* Header / Player Card */}
-                <div className="relative mb-8 text-center">
+                {/* Header - Compact */}
+                <div className="text-center mb-6">
                     {/* Avatar */}
-                    <div className="relative w-32 h-32 mx-auto mb-4">
-                        <div className="absolute inset-0 bg-gold-500 blur-2xl opacity-40 rounded-full animate-pulse"></div>
-                        <div className="w-full h-full rounded-full p-1 bg-gradient-to-br from-gold-400 to-gold-600 relative z-10">
-                            <div className="w-full h-full rounded-full bg-black overflow-hidden border-4 border-black flex items-center justify-center">
-                                {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt="Avatar" /> : <Users size={48} className="text-gray-600" />}
+                    <div className="relative w-20 h-20 mx-auto mb-3">
+                        <div className="w-full h-full rounded-full p-0.5 bg-gradient-to-br from-gold-400 to-gold-600">
+                            <div className="w-full h-full rounded-full bg-black overflow-hidden border-2 border-black flex items-center justify-center">
+                                {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt="Avatar" /> : <Users size={32} className="text-gray-600" />}
                             </div>
                         </div>
-                        <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-gold-500 to-yellow-600 w-12 h-12 rounded-full flex items-center justify-center border-4 border-black z-20 shadow-lg">
-                            <Crown size={20} className="text-black" />
+                        <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-gold-500 to-yellow-600 w-8 h-8 rounded-full flex items-center justify-center border-2 border-black shadow-lg">
+                            <Crown size={14} className="text-black" />
                         </div>
                     </div>
 
                     {/* Name & Level */}
-                    <h2 className="text-4xl font-black text-white tracking-tight mb-2">{user.name}</h2>
-                    <div className="flex items-center justify-center space-x-3">
-                        <span className="text-gold-400 font-bold text-sm flex items-center bg-gold-500/10 px-4 py-1.5 rounded-full border border-gold-500/30 backdrop-blur-sm">
-                            <Star size={14} className="mr-1.5 fill-gold-500" />
-                            Nível {level}
-                        </span>
-                        <span className="text-gray-500 text-xs font-mono tracking-wider">MEMBRO {new Date().getFullYear()}</span>
+                    <h2 className="text-2xl font-black text-white mb-1">{user.name}</h2>
+                    <div className="inline-flex items-center bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/30">
+                        <Star size={12} className="mr-1 fill-gold-500 text-gold-500" />
+                        <span className="text-gold-400 font-bold text-xs">Nível {level}</span>
                     </div>
                 </div>
 
-                {/* Stats Cards - Horizontal Scroll */}
-                <div className="mb-8">
-                    <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <TrendingUp size={14} className="text-gold-500" />
-                        Performance
-                    </h3>
-                    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory">
-                        {/* Stars */}
-                        <div className="flex-shrink-0 w-40 bg-gradient-to-br from-gold-500/10 to-gold-600/5 backdrop-blur-sm p-5 rounded-2xl border border-gold-500/20 snap-center shadow-lg">
-                            <Star className="text-gold-400 mb-2" size={24} />
-                            <span className="block text-4xl font-black text-white mb-1">{totalStars}</span>
-                            <span className="text-xs uppercase text-gray-400 font-bold tracking-wider">Estrelas</span>
-                        </div>
-                        {/* Territories */}
-                        <div className="flex-shrink-0 w-40 bg-white/5 backdrop-blur-sm p-5 rounded-2xl border border-white/10 snap-center shadow-lg">
-                            <MapPin className="text-blue-400 mb-2" size={24} />
-                            <span className="block text-4xl font-black text-white mb-1">{totalTerritories}</span>
-                            <span className="text-xs uppercase text-gray-400 font-bold tracking-wider">Territórios</span>
-                        </div>
-                        {/* Distance */}
-                        <div className="flex-shrink-0 w-40 bg-white/5 backdrop-blur-sm p-5 rounded-2xl border border-white/10 snap-center shadow-lg">
-                            <TrendingUp className="text-green-400 mb-2" size={24} />
-                            <span className="block text-4xl font-black text-white mb-1">{totalDistance.toFixed(1)}</span>
-                            <span className="text-xs uppercase text-gray-400 font-bold tracking-wider">KM Totais</span>
-                        </div>
+                {/* Stats Grid 2x2 */}
+                <div className="grid grid-cols-2 gap-3 mb-5">
+                    {/* Stars */}
+                    <div className="bg-gradient-to-br from-gold-500/15 to-gold-600/5 backdrop-blur-sm p-4 rounded-xl border border-gold-500/30 text-center">
+                        <Star className="text-gold-400 mx-auto mb-1" size={20} />
+                        <div className="text-3xl font-black text-white mb-0.5">{totalStars}</div>
+                        <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Estrelas</div>
+                    </div>
+
+                    {/* Territories */}
+                    <div className="bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 text-center">
+                        <MapPin className="text-blue-400 mx-auto mb-1" size={20} />
+                        <div className="text-3xl font-black text-white mb-0.5">{totalTerritories}</div>
+                        <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Territórios</div>
+                    </div>
+
+                    {/* Distance */}
+                    <div className="bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 text-center">
+                        <TrendingUp className="text-green-400 mx-auto mb-1" size={20} />
+                        <div className="text-3xl font-black text-white mb-0.5">{totalDistance.toFixed(1)}</div>
+                        <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">KM Totais</div>
+                    </div>
+
+                    {/* Level (repeated for symmetry) */}
+                    <div className="bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 text-center">
+                        <Award className="text-purple-400 mx-auto mb-1" size={20} />
+                        <div className="text-3xl font-black text-white mb-0.5">{level}</div>
+                        <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Nível</div>
                     </div>
                 </div>
+
+                {/* FORCE UPDATE BUTTON - HIGHLIGHTED */}
+                <button
+                    onClick={() => window.location.reload()}
+                    className="w-full mb-6 bg-gradient-to-r from-gold-500 to-yellow-600 hover:from-gold-400 hover:to-yellow-500 text-black font-black text-sm py-4 rounded-xl shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-2 border-2 border-gold-300"
+                >
+                    <RefreshCw size={18} className="animate-spin-slow" />
+                    FORÇAR ATUALIZAÇÃO DO APP
+                    <Zap size={16} className="fill-black" />
+                </button>
 
                 {/* Actions Grid */}
-                <div className="mb-8">
-                    <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <Award size={14} className="text-gold-500" />
-                        Ações
-                    </h3>
-                    <div className="grid grid-cols-4 gap-3">
-                        <button onClick={() => setShowAdminLogin(!showAdminLogin)} className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group">
-                            <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all mb-2 border border-white/10">
-                                <Lock size={22} />
+                <div className="mb-6">
+                    <h3 className="text-gray-500 font-bold text-[10px] uppercase tracking-widest mb-3">Ações Rápidas</h3>
+                    <div className="grid grid-cols-4 gap-2">
+                        <button onClick={() => setShowAdminLogin(!showAdminLogin)} className="flex flex-col items-center active:scale-95 transition-transform group">
+                            <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all mb-1.5 border border-white/10">
+                                <Lock size={18} />
                             </div>
-                            <span className="text-[10px] font-bold text-gray-500 group-hover:text-gray-300">ADMIN</span>
+                            <span className="text-[9px] font-bold text-gray-500 group-hover:text-gray-300">ADMIN</span>
                         </button>
-                        <button onClick={onShowLeaderboard} className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group">
-                            <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center text-white group-hover:bg-white/10 transition-all mb-2 border border-white/10">
-                                <Award size={22} />
+                        <button onClick={onShowLeaderboard} className="flex flex-col items-center active:scale-95 transition-transform group">
+                            <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center text-white group-hover:bg-white/10 transition-all mb-1.5 border border-white/10">
+                                <Award size={18} />
                             </div>
-                            <span className="text-[10px] font-bold text-gray-500 group-hover:text-white">RANK</span>
+                            <span className="text-[9px] font-bold text-gray-500 group-hover:text-white">RANK</span>
                         </button>
                         {user.role === 'owner' && onViewTeam && (
-                            <button onClick={onViewTeam} className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group">
-                                <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center text-white group-hover:bg-white/10 transition-all mb-2 border border-white/10">
-                                    <Users size={22} />
+                            <button onClick={onViewTeam} className="flex flex-col items-center active:scale-95 transition-transform group">
+                                <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center text-white group-hover:bg-white/10 transition-all mb-1.5 border border-white/10">
+                                    <Users size={18} />
                                 </div>
-                                <span className="text-[10px] font-bold text-gray-500 group-hover:text-white">EQUIPE</span>
+                                <span className="text-[9px] font-bold text-gray-500 group-hover:text-white">EQUIPE</span>
                             </button>
                         )}
-                        <button onClick={onLogout} className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform group">
-                            <div className="w-14 h-14 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 group-hover:bg-red-500/20 transition-all mb-2 border border-red-500/20">
-                                <LogOut size={22} />
+                        <button onClick={onLogout} className="flex flex-col items-center active:scale-95 transition-transform group">
+                            <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center text-red-500 group-hover:bg-red-500/20 transition-all mb-1.5 border border-red-500/20">
+                                <LogOut size={18} />
                             </div>
-                            <span className="text-[10px] font-bold text-gray-500 group-hover:text-red-500">SAIR</span>
+                            <span className="text-[9px] font-bold text-gray-500 group-hover:text-red-500">SAIR</span>
                         </button>
                     </div>
                 </div>
 
                 {/* Admin Login */}
                 {showAdminLogin && (
-                    <div className="mb-6 p-4 bg-white/5 backdrop-blur-md rounded-xl flex animate-in slide-in-from-top border border-white/10 shadow-lg">
+                    <div className="mb-5 p-3 bg-white/5 backdrop-blur-md rounded-xl flex gap-2 animate-in slide-in-from-top border border-white/10">
                         <input
                             type="password"
                             placeholder="Senha de acesso"
-                            className="flex-1 bg-black/50 border border-gray-700 rounded-l-lg px-4 py-2 text-sm text-white outline-none focus:border-gold-500"
+                            className="flex-1 bg-black/50 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-gold-500"
                             value={adminPassword}
                             onChange={(e) => setAdminPassword(e.target.value)}
                         />
-                        <button onClick={handleAdminLogin} className="bg-gold-500 text-black px-4 rounded-r-lg font-bold text-sm hover:bg-gold-400">ENTRAR</button>
+                        <button onClick={handleAdminLogin} className="bg-gold-500 text-black px-4 rounded-lg font-bold text-sm hover:bg-gold-400">ENTRAR</button>
                     </div>
                 )}
 
                 {/* Territories List */}
-                <div className="mb-8">
-                    <h3 className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <MapPin size={14} className="text-gold-500" />
+                <div className="mb-6">
+                    <h3 className="text-gray-500 font-bold text-[10px] uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                        <MapPin size={12} className="text-gold-500" />
                         Meus Territórios ({totalTerritories})
                     </h3>
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                    <div className="space-y-2 max-h-72 overflow-y-auto">
                         {myTerritories.length === 0 ? (
-                            <p className="text-gray-500 text-sm text-center py-8">Nenhum território conquistado ainda.</p>
+                            <div className="text-center py-12 bg-white/5 rounded-xl border border-white/10">
+                                <MapPin size={32} className="text-gray-600 mx-auto mb-2" />
+                                <p className="text-gray-500 text-sm">Nenhum território conquistado</p>
+                            </div>
                         ) : (
                             myTerritories.map(t => (
                                 <button
                                     key={t.id}
                                     onClick={() => onTerritoryClick?.(t.id)}
-                                    className="w-full bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 flex items-center justify-between hover:border-gold-500/30 active:scale-[0.98] transition-all text-left group shadow-lg"
+                                    className="w-full bg-white/5 backdrop-blur-sm p-3 rounded-lg border border-white/10 flex items-center justify-between hover:border-gold-500/40 hover:bg-white/10 active:scale-[0.98] transition-all text-left group"
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-black/50 border border-white/5 flex items-center justify-center text-lg shadow-inner">📍</div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-full bg-black/50 border border-white/5 flex items-center justify-center text-base">📍</div>
                                         <div>
-                                            <h4 className="font-bold text-gray-200 group-hover:text-gold-400 transition-colors text-sm">{t.name}</h4>
-                                            <span className="text-[10px] text-gray-500 font-mono tracking-wide">{new Date(t.conqueredAt).toLocaleDateString()} • {t.area}m²</span>
+                                            <h4 className="font-bold text-gray-200 group-hover:text-gold-400 transition-colors text-sm leading-tight">{t.name}</h4>
+                                            <span className="text-[9px] text-gray-500 font-mono">{new Date(t.conqueredAt).toLocaleDateString()} • {t.area}m²</span>
                                         </div>
                                     </div>
-                                    <Star className="text-gold-500 fill-gold-500" size={16} />
+                                    <Star className="text-gold-500 fill-gold-500 flex-shrink-0" size={14} />
                                 </button>
                             ))
                         )}
                     </div>
                 </div>
 
-                {/* Force Update Button */}
-                <div className="text-center pb-8 border-t border-white/10 pt-6">
-                    <p className="text-gray-600 text-[10px] uppercase tracking-widest mb-3 font-mono">Versão 1.2.0</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wide transition-colors border border-white/10 flex items-center gap-2 mx-auto"
-                    >
-                        <RefreshCw size={14} />
-                        Forçar Atualização
-                    </button>
+                {/* Version Footer */}
+                <div className="text-center pt-4 border-t border-white/10">
+                    <p className="text-gray-600 text-[9px] uppercase tracking-widest font-mono">Versão 1.2.0</p>
                 </div>
 
             </div>
