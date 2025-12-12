@@ -105,40 +105,37 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-black to-zinc-900 font-sans selection:bg-gold-500 selection:text-black flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white font-sans flex flex-col relative overflow-hidden">
 
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gold-600/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
+      {/* Simple Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/50 via-black to-black"></div>
 
       {/* Main Content - Fullscreen */}
-      <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center px-6 py-8">
+      <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center px-6 py-6">
 
         {/* Logo */}
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center justify-center mb-6">
           <img
             src="/brand-logo-login.png"
             alt="Territory Run"
-            className="h-32 w-auto object-contain drop-shadow-[0_0_20px_rgba(234,179,8,0.3)] transition-transform hover:scale-105 duration-500"
+            className="h-24 w-auto object-contain"
           />
         </div>
 
         {/* Business Toggle Tabs */}
         {!inviteTeam && (
-          <div className="w-full max-w-sm flex p-1 bg-white/5 rounded-2xl mb-6 border border-white/10 backdrop-blur-sm">
+          <div className="w-full flex p-1 bg-white/5 rounded-2xl mb-5 border border-white/10">
             <button
               type="button"
               onClick={() => setIsBusiness(false)}
-              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${!isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg shadow-gold-500/20' : 'text-gray-400 hover:text-gray-200'}`}
+              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${!isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg' : 'text-gray-400'}`}
             >
               🏃 Atleta
             </button>
             <button
               type="button"
               onClick={() => setIsBusiness(true)}
-              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg shadow-gold-500/20' : 'text-gray-400 hover:text-gray-200'}`}
+              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg' : 'text-gray-400'}`}
             >
               🏢 Assessoria
             </button>
@@ -146,9 +143,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
         )}
 
         {/* Welcome Text */}
-        <div className="w-full max-w-sm mb-6 text-center">
+        <div className="w-full mb-5 text-center">
           {inviteTeam ? (
-            <div className="bg-gradient-to-r from-gold-600/20 to-gold-400/20 p-4 rounded-2xl mb-4 border border-gold-500/30 backdrop-blur-sm">
+            <div className="bg-gradient-to-r from-gold-600/20 to-gold-400/20 p-4 rounded-2xl mb-4 border border-gold-500/30">
               <div className="flex items-center justify-center space-x-2 mb-2">
                 <Users className="text-gold-400" size={24} />
                 <h3 className="text-lg font-black text-white">Convite de Equipe!</h3>
@@ -165,7 +162,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
             </div>
           ) : null}
 
-          <h2 className="text-3xl font-black text-white mb-2 tracking-tight">
+          <h2 className="text-2xl font-black text-white mb-2 tracking-tight">
             {isBusiness ? 'Cadastro de Assessoria 🏢' : 'Bora Correr! 🏃'}
           </h2>
           <p className="text-sm text-gray-400 font-medium">
@@ -179,33 +176,33 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+        <form onSubmit={handleSubmit} className="w-full space-y-3.5">
 
           {isBusiness && (
             <>
-              <div className="group">
-                <label className="block text-xs uppercase font-bold text-gold-400 mb-2 ml-1">Nome da Assessoria</label>
+              <div>
+                <label className="block text-xs uppercase font-bold text-gold-400 mb-1.5 ml-1">Nome da Assessoria</label>
                 <div className="relative">
                   <Building className="absolute left-4 top-3.5 text-gray-500" size={18} />
                   <input
                     type="text"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full pl-12 pr-5 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 font-medium text-sm"
+                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-medium text-sm"
                     placeholder="EX: IRON RUNNERS"
                     disabled={loading}
                   />
                 </div>
               </div>
-              <div className="group">
-                <label className="block text-xs uppercase font-bold text-gold-400 mb-2 ml-1">CNPJ</label>
+              <div>
+                <label className="block text-xs uppercase font-bold text-gold-400 mb-1.5 ml-1">CNPJ</label>
                 <div className="relative">
                   <Briefcase className="absolute left-4 top-3.5 text-gray-500" size={18} />
                   <input
                     type="text"
                     value={cnpj}
                     onChange={(e) => setCnpj(e.target.value)}
-                    className="w-full pl-12 pr-5 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 font-medium text-sm"
+                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-medium text-sm"
                     placeholder="00.000.000/0000-00"
                     disabled={loading}
                   />
@@ -214,41 +211,41 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
             </>
           )}
 
-          <div className="group">
-            <label className="block text-xs uppercase font-bold text-gray-400 mb-2 ml-1">{isBusiness ? 'Seu Nome (Responsável)' : 'Seu Codinome'}</label>
+          <div>
+            <label className="block text-xs uppercase font-bold text-gray-400 mb-1.5 ml-1">{isBusiness ? 'Seu Nome (Responsável)' : 'Seu Codinome'}</label>
             <div className="relative">
               <Users className="absolute left-4 top-3.5 text-gray-500" size={18} />
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full pl-12 pr-5 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 font-medium text-sm"
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-medium text-sm"
                 placeholder={isBusiness ? "SEU NOME" : "SEU APELIDO NA CORRIDA"}
                 disabled={loading}
               />
             </div>
           </div>
 
-          <div className="group">
-            <label className="block text-xs uppercase font-bold text-gray-400 mb-2 ml-1">Celular / WhatsApp</label>
+          <div>
+            <label className="block text-xs uppercase font-bold text-gray-400 mb-1.5 ml-1">Celular / WhatsApp</label>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-5 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 font-medium text-sm"
+              className="w-full px-4 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-medium text-sm"
               placeholder="(11) 99999-9999"
               disabled={loading}
             />
           </div>
 
-          <div className="group">
-            <label className="block text-xs uppercase font-bold text-gray-400 mb-2 ml-1">Senha Secreta</label>
+          <div>
+            <label className="block text-xs uppercase font-bold text-gray-400 mb-1.5 ml-1">Senha Secreta</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-5 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 backdrop-blur-sm text-white placeholder-gray-500 font-medium text-sm pr-12"
+                className="w-full px-4 py-3.5 rounded-xl border border-white/10 focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 focus:outline-none transition-all bg-white/5 text-white placeholder-gray-500 font-medium text-sm pr-12"
                 placeholder="••••••••"
                 disabled={loading}
               />
@@ -266,13 +263,13 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all group mt-6 ${loading ? 'bg-gray-700 cursor-not-allowed text-gray-500' : 'bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-400 hover:to-yellow-400 text-black shadow-[0_0_30px_rgba(234,179,8,0.4)] hover:shadow-[0_0_40px_rgba(234,179,8,0.6)] active:scale-95'}`}
+            className={`w-full py-4 rounded-xl font-black uppercase tracking-wide shadow-lg flex items-center justify-center gap-2 transition-all mt-5 ${loading ? 'bg-gray-700 cursor-not-allowed text-gray-500' : 'bg-gradient-to-r from-gold-500 to-yellow-500 hover:from-gold-400 hover:to-yellow-400 text-black active:scale-95'}`}
           >
             {loading ? (
               <span>Carregando...</span>
             ) : (
               <>
-                <Zap size={20} className={`fill-black ${!isBusiness && 'animate-pulse'}`} />
+                <Zap size={20} className="fill-black" />
                 <span>{isBusiness ? 'Cadastrar Assessoria' : inviteTeam ? 'Aceitar Convite' : 'Começar Agora'}</span>
               </>
             )}
@@ -281,11 +278,11 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
 
         {/* Toggle Link */}
         {!inviteTeam && (
-          <div className="mt-6 text-center">
+          <div className="mt-5 text-center">
             <button
               type="button"
               onClick={() => setIsBusiness(!isBusiness)}
-              className="text-xs font-bold text-gray-500 hover:text-gold-400 transition-colors uppercase tracking-widest border-b border-transparent hover:border-gold-400 pb-0.5"
+              className="text-xs font-bold text-gray-500 hover:text-gold-400 transition-colors uppercase tracking-widest"
             >
               {isBusiness ? '← Voltar para cadastro de Atleta' : 'Assessoria? Cadastre-se aqui →'}
             </button>
@@ -293,13 +290,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
         )}
 
         {/* Version Info */}
-        <div className="mt-8 text-center">
+        <div className="mt-6 text-center">
           <p className="text-[10px] text-gray-600 font-mono tracking-wider">v1.2.0 • TERRITORY RUN</p>
         </div>
 
       </div>
-    </div >
-  );
+    </div>
   );
 };
 
