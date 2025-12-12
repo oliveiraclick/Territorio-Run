@@ -128,14 +128,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onRegister }) => {
             <button
               type="button"
               onClick={() => setIsBusiness(false)}
-              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${!isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg' : 'text-gray-400'}`}
+              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${!isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg' : 'text-white hover:text-gray-300'}`}
             >
               🏃 Atleta
             </button>
             <button
               type="button"
               onClick={() => setIsBusiness(true)}
-              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg' : 'text-gray-400'}`}
+              className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${isBusiness ? 'bg-gradient-to-r from-gold-500 to-yellow-500 text-black shadow-lg' : 'text-white hover:text-gray-300'}`}
             >
               🏢 Assessoria
             </button>
