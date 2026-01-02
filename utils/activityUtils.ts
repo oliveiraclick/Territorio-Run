@@ -2,12 +2,13 @@ import { Coordinate, ActivityMode } from '../types';
 
 // Limites de velocidade por modalidade (km/h)
 export const SPEED_LIMITS = {
-    running: 25,  // Inclui caminhada (3-7 km/h) e corrida (8-25 km/h)
-    cycling: 50   // Ciclismo normal
+    running: 45,  // Aumentado para tolerar sprints e picos (recorde mundial ~44km/h)
+    cycling: 60   // Aumentado para permitir descidas rápidas
 };
 
 // Limite para detecção de fraude (veículos motorizados)
-export const FRAUD_THRESHOLD = 55; // km/h
+// Só será considerado fraude se houver velocidade SUSTENTADA acima disso
+export const FRAUD_THRESHOLD = 80; // km/h
 
 // Multiplicadores de pontos por modalidade
 export const ACTIVITY_MULTIPLIERS = {
@@ -53,7 +54,8 @@ export const calculateAverageSpeed = (path: Coordinate[]): number => {
 
     for (let i = 1; i < path.length; i++) {
         const speed = calculateSpeed(path[i - 1], path[i]);
-        if (speed > 0 && speed < 200) { // Filtrar valores absurdos
+        // Filtra ruído (parado) e valores absurdos (> 150km/h - glitch de GPS)
+        if (speed > 1.0 && speed < 150) {
             totalSpeed += speed;
             validPoints++;
         }
@@ -63,30 +65,39 @@ export const calculateAverageSpeed = (path: Coordinate[]): number => {
 };
 
 /**
- * Calcula a velocidade máxima de um percurso
+ * Calcula a velocidade máxima de um percurso com filtro de ruído
+ * Considera a média móvel de 3 pontos para evitar picos isolados de GPS
  * @param path Caminho percorrido
- * @returns Velocidade máxima em km/h
+ * @returns Velocidade máxima "real" em km/h
  */
 export const calculateMaxSpeed = (path: Coordinate[]): number => {
-    if (path.length < 2) return 0;
+    if (path.length < 4) return 0; // Precisa de pelo menos alguns pontos para média móvel
 
-    let maxSpeed = 0;
+    let maxSustainedSpeed = 0;
 
-    for (let i = 1; i < path.length; i++) {
-        const speed = calculateSpeed(path[i - 1], path[i]);
-        if (speed > maxSpeed && speed < 200) { // Filtrar valores absurdos
-            maxSpeed = speed;
+    // Analisa janelas de 3 segundos/pontos para verificar consistência
+    for (let i = 3; i < path.length; i++) {
+        const s1 = calculateSpeed(path[i - 3], path[i - 2]);
+        const s2 = calculateSpeed(path[i - 2], path[i - 1]);
+        const s3 = calculateSpeed(path[i - 1], path[i]);
+
+        // Se todos os pontos da janela são válidos (não são glitches extremos > 150)
+        if (s1 < 150 && s2 < 150 && s3 < 150) {
+            const avgWindow = (s1 + s2 + s3) / 3;
+            if (avgWindow > maxSustainedSpeed) {
+                maxSustainedSpeed = avgWindow;
+            }
         }
     }
 
-    return maxSpeed;
+    return maxSustainedSpeed;
 };
 
 /**
  * Valida se a atividade é compatível com a modalidade selecionada
  * @param mode Modalidade selecionada
  * @param avgSpeed Velocidade média
- * @param maxSpeed Velocidade máxima
+ * @param maxSpeed Velocidade máxima calculada
  * @returns Resultado da validação
  */
 export const validateActivity = (
@@ -99,43 +110,31 @@ export const validateActivity = (
     if (maxSpeed > FRAUD_THRESHOLD) {
         return {
             valid: false,
-            reason: '🚫 Velocidade suspeita detectada! Possível uso de veículo motorizado.',
+            reason: '🚫 Velocidade sustentada de veículo detectada!',
             suspicionLevel: 'high'
         };
     }
 
-    // Validar compatibilidade com modalidade
-    if (mode === 'running' && avgSpeed > SPEED_LIMITS.running) {
-        return {
-            valid: false,
-            reason: `⚠️ Velocidade média (${avgSpeed.toFixed(1)} km/h) incompatível com corrida/caminhada.`,
-            suspicionLevel: 'high'
-        };
+    // Validar compatibilidade com modalidade (Running)
+    if (mode === 'running') {
+        if (avgSpeed > SPEED_LIMITS.running) {
+            return {
+                valid: false,
+                reason: `⚠️ Média de ${avgSpeed.toFixed(1)} km/h é incompatível com corrida humana.`,
+                suspicionLevel: 'high'
+            };
+        }
     }
 
-    if (mode === 'cycling' && avgSpeed > SPEED_LIMITS.cycling) {
-        return {
-            valid: false,
-            reason: `⚠️ Velocidade média (${avgSpeed.toFixed(1)} km/h) muito alta para ciclismo.`,
-            suspicionLevel: 'high'
-        };
-    }
-
-    // Alerta se velocidade está próxima do limite
-    if (mode === 'running' && avgSpeed > SPEED_LIMITS.running * 0.8) {
-        return {
-            valid: true,
-            reason: `⚠️ Velocidade próxima do limite para corrida.`,
-            suspicionLevel: 'medium'
-        };
-    }
-
-    if (mode === 'cycling' && avgSpeed > SPEED_LIMITS.cycling * 0.8) {
-        return {
-            valid: true,
-            reason: `⚠️ Velocidade próxima do limite para ciclismo.`,
-            suspicionLevel: 'medium'
-        };
+    // Validar compatibilidade com modalidade (Cycling)
+    if (mode === 'cycling') {
+        if (avgSpeed > SPEED_LIMITS.cycling) {
+            return {
+                valid: false,
+                reason: `⚠️ Média de ${avgSpeed.toFixed(1)} km/h excessiva para ciclismo amador.`,
+                suspicionLevel: 'high'
+            };
+        }
     }
 
     return { valid: true, suspicionLevel: 'low' };

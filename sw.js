@@ -1,4 +1,4 @@
-const CACHE_NAME = 'territory-run-v8';
+const CACHE_NAME = 'territory-run-v9';
 const urlsToCache = [
   './',
   './index.html',

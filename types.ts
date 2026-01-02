@@ -178,3 +178,32 @@ export interface Sponsor {
   logoUrl?: string;
   qrCodeValue: string; // Secret token for QR
 }
+
+export interface StravaActivity {
+  id: number;
+  name: string;
+  distance: number; // meters
+  moving_time: number; // seconds
+  elapsed_time: number; // seconds
+  total_elevation_gain: number; // meters
+  type: string;
+  start_date: string; // ISO 8601
+  start_date_local: string;
+  map: {
+    id: string;
+    summary_polyline: string;
+    resource_state: number;
+  };
+  start_latlng: [number, number];
+  end_latlng: [number, number];
+  average_speed: number;
+  max_speed: number;
+}
+
+export interface StravaStream {
+  type: 'latlng' | 'distance' | 'altitude' | 'time';
+  data: any[];
+  series_type: string;
+  original_size: number;
+  resolution: string;
+}

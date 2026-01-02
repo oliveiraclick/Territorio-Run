@@ -11,6 +11,7 @@ import CreateTeamModal from './components/Team/CreateTeamModal';
 import TeamDashboard from './components/Team/TeamDashboard';
 import CreateChallengeModal from './components/Team/CreateChallengeModal';
 import ActivityModeSelector from './components/UI/ActivityModeSelector';
+import { LeaderboardModal } from './components/UI/LeaderboardModal';
 import { GameRules } from './components/UI/GameRules';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { RefreshCw } from 'lucide-react';
@@ -110,9 +111,92 @@ export default function App() {
 
   const simulationInterval = useRef<any>(null);
   const watchId = useRef<number | null>(null);
+  const wakeLock = useRef<any>(null); // Wake Lock reference
 
+  // --- PERSISTENCE & WAKE LOCK ---
 
+  // 1. Recover crash/closed state
+  useEffect(() => {
+    const savedRun = localStorage.getItem('territory_run_state');
+    if (savedRun) {
+      try {
+        const parsed = JSON.parse(savedRun);
+        if (parsed.isRunning && parsed.currentPath && parsed.currentPath.length > 0) {
+          console.log("⚠️ Crash recovered: Resuming run...", parsed);
+          setIsRunning(true);
+          setCurrentPath(parsed.currentPath);
+          setDistance(parsed.distance || 0);
+          setRunStartTime(parsed.runStartTime || Date.now());
+          setSelectedActivityMode(parsed.activityMode || 'running');
 
+          // Optional: Notify user
+          alert("Corrida recuperada! O sistema fechou inesperadamente, mas seus dados foram salvos.");
+        }
+      } catch (e) {
+        console.error("Failed to recover run:", e);
+      }
+    }
+  }, []);
+
+  // 2. Save state on every update (Only if running)
+  useEffect(() => {
+    if (isRunning && currentPath.length > 0) {
+      const stateToSave = {
+        isRunning: true,
+        currentPath,
+        distance,
+        runStartTime,
+        activityMode: selectedActivityMode,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('territory_run_state', JSON.stringify(stateToSave));
+    }
+  }, [isRunning, currentPath, distance, runStartTime, selectedActivityMode]);
+
+  // 3. Screen Wake Lock (Keep screen on)
+  const requestWakeLock = async () => {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLock.current = await (navigator as any).wakeLock.request('screen');
+        console.log('Wake Lock active!');
+      }
+    } catch (err: any) {
+      console.warn(`${err.name}, ${err.message}`);
+    }
+  };
+
+  const releaseWakeLock = async () => {
+    if (wakeLock.current) {
+      try {
+        await wakeLock.current.release();
+        wakeLock.current = null;
+        console.log('Wake Lock released');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  // Toggle Wake Lock based on isRunning
+  useEffect(() => {
+    if (isRunning) {
+      requestWakeLock();
+      // Re-acquire if visibility changes (e.g. user minimized and came back)
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible' && isRunning) {
+          requestWakeLock();
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        releaseWakeLock();
+      };
+    } else {
+      releaseWakeLock();
+    }
+  }, [isRunning]);
+  // 4. Load User Session
   useEffect(() => {
     const savedUserStr = localStorage.getItem('territory_user_session');
     if (savedUserStr) {
@@ -338,6 +422,7 @@ export default function App() {
 
   const handleStop = async () => {
     setIsRunning(false);
+    localStorage.removeItem('territory_run_state'); // Clear saved state on stop
     if (simulationInterval.current) clearInterval(simulationInterval.current);
     setIsSimulating(false);
     if (currentPath.length < 5) { alert("Trajeto muito curto, continue se movendo."); return; }

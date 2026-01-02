@@ -13,7 +13,11 @@ interface ProfileScreenProps {
     onAdminAccess: () => void;
     onTerritoryClick?: (territoryId: string) => void;
     onShowLeaderboard: () => void;
+    onShowLeaderboard: () => void;
     onViewTeam?: () => void;
+    isStravaConnected?: boolean;
+    onConnectStrava?: () => void;
+    onSyncStrava?: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
@@ -27,6 +31,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     onTerritoryClick,
     onShowLeaderboard,
     onViewTeam,
+    isStravaConnected = false,
+    onConnectStrava,
+    onSyncStrava
 }) => {
     const [showAdminLogin, setShowAdminLogin] = React.useState(false);
     const [adminPassword, setAdminPassword] = React.useState('');
