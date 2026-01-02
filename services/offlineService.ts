@@ -5,7 +5,7 @@ import { supabase } from './supabaseClient';
 
 export interface OfflineItem {
     id: string;
-    type: 'conquest' | 'run_points' | 'update_owner';
+    type: 'conquest' | 'run_points' | 'update_owner' | 'update_user';
     payload: any;
     timestamp: number;
     retryCount: number;
@@ -91,6 +91,18 @@ export const processOfflineQueue = async () => {
                     .eq('id', territoryId);
                 if (error) throw error;
                 console.log('Synced ownership update:', territoryId);
+
+            } else if (item.type === 'update_user') {
+                const { userId, updates } = item.payload;
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({
+                        name: updates.name,
+                        phone: updates.phone,
+                    })
+                    .eq('id', userId);
+                if (error) throw error;
+                console.log('Synced user update:', userId);
             }
 
             removeFromQueue(item.id);

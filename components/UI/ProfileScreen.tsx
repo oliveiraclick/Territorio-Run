@@ -17,6 +17,7 @@ interface ProfileScreenProps {
     isStravaConnected?: boolean;
     onConnectStrava?: () => void;
     onSyncStrava?: () => void;
+    onUpdateProfile: (name: string, phone: string) => Promise<boolean>;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
@@ -30,12 +31,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     onTerritoryClick,
     onShowLeaderboard,
     onViewTeam,
-    isStravaConnected = false,
     onConnectStrava,
-    onSyncStrava
+    onSyncStrava,
+    onUpdateProfile
 }) => {
     const [showAdminLogin, setShowAdminLogin] = React.useState(false);
     const [adminPassword, setAdminPassword] = React.useState('');
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [editName, setEditName] = React.useState(user.name);
+    const [editPhone, setEditPhone] = React.useState(user.phone || '');
+    const [saving, setSaving] = React.useState(false);
 
     const handleAdminLogin = () => {
         if (adminPassword === 'admin123') {
@@ -44,6 +49,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             setAdminPassword('');
         } else {
             alert('Senha incorreta!');
+        }
+    };
+
+    const handleSaveProfile = async () => {
+        if (!editName.trim()) {
+            alert('Nome não pode ser vazio.');
+            return;
+        }
+        setSaving(true);
+        const success = await onUpdateProfile(editName, editPhone);
+        setSaving(false);
+        if (success) {
+            setIsEditing(false);
         }
     };
 
@@ -78,30 +96,80 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                 {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt="Avatar" /> : <Users size={32} className="text-gray-600" />}
                             </div>
                         </div>
-                        <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-gold-500 to-yellow-600 w-8 h-8 rounded-full flex items-center justify-center border-2 border-black shadow-lg">
+                        <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-gold-500 to-yellow-600 w-8 h-8 rounded-full flex items-center justify-center border-2 border-black shadow-lg pointer-events-none">
                             <Crown size={14} className="text-black" />
                         </div>
+                        {/* Edit Button (Pencil) */}
+                        {!isEditing && (
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="absolute bottom-0 left-0 bg-white text-black p-1.5 rounded-full shadow-lg border border-gray-300 hover:bg-gray-100 z-20"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                            </button>
+                        )}
                     </div>
 
                 </div>
 
-                {/* Name & Role */}
-                <h2 className="text-2xl font-black text-white mb-1">{user.name}</h2>
-                <div className="flex flex-col items-center gap-1">
-                    <div className="inline-flex items-center bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/30">
-                        <Star size={12} className="mr-1 fill-gold-500 text-gold-500" />
-                        <span className="text-gold-400 font-bold text-xs">Nível {level}</span>
+                {/* Name & Role (Or Edit Form) */}
+                {isEditing ? (
+                    <div className="bg-white/10 p-4 rounded-xl mb-6 border border-white/20 space-y-3">
+                        <div>
+                            <label className="text-xs text-gray-400 font-bold uppercase">Nome / Codinome</label>
+                            <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="w-full bg-black/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-gold-500 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-xs text-gray-400 font-bold uppercase">Telefone</label>
+                            <input
+                                type="tel"
+                                value={editPhone}
+                                onChange={(e) => setEditPhone(e.target.value)}
+                                className="w-full bg-black/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-gold-500 outline-none"
+                            />
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg text-sm font-bold"
+                            >
+                                CANCELAR
+                            </button>
+                            <button
+                                onClick={handleSaveProfile}
+                                disabled={saving}
+                                className="flex-1 bg-gold-500 hover:bg-gold-400 text-black py-2 rounded-lg text-sm font-bold flex items-center justify-center"
+                            >
+                                {saving ? <RefreshCw className="animate-spin mr-1" size={14} /> : null}
+                                SALVAR
+                            </button>
+                        </div>
                     </div>
-                    {/* Role Tag */}
-                    <div className={`px-2 py-0.5 rounded-md border text-[9px] font-bold tracking-widest uppercase ${user.role === 'owner'
-                        ? 'bg-gold-500/20 border-gold-500/50 text-gold-400'
-                        : user.teamId
-                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                            : 'bg-gray-500/20 border-gray-500/50 text-gray-400'
-                        }`}>
-                        {user.role === 'owner' ? '🏢 Assessoria / Dono' : user.teamId ? '🛡️ Membro de Equipe' : '🏃 Atleta Independente'}
-                    </div>
-                </div>
+                ) : (
+                    <>
+                        <h2 className="text-2xl font-black text-white mb-1">{user.name}</h2>
+                        <div className="flex flex-col items-center gap-1 mb-6">
+                            <div className="inline-flex items-center bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/30">
+                                <Star size={12} className="mr-1 fill-gold-500 text-gold-500" />
+                                <span className="text-gold-400 font-bold text-xs">Nível {level}</span>
+                            </div>
+                            {/* Role Tag */}
+                            <div className={`px-2 py-0.5 rounded-md border text-[9px] font-bold tracking-widest uppercase ${user.role === 'owner'
+                                ? 'bg-gold-500/20 border-gold-500/50 text-gold-400'
+                                : user.teamId
+                                    ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                                    : 'bg-gray-500/20 border-gray-500/50 text-gray-400'
+                                }`}>
+                                {user.role === 'owner' ? '🏢 Assessoria / Dono' : user.teamId ? '🛡️ Membro de Equipe' : '🏃 Atleta Independente'}
+                            </div>
+                        </div>
+                    </>
+                )}
 
                 {/* Stats Grid 2x2 */}
                 <div className="grid grid-cols-2 gap-3 mb-5">

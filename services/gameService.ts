@@ -148,6 +148,53 @@ export const fetchAllUsers = async (): Promise<User[]> => {
   }
 };
 
+export const updateUser = async (userId: string, updates: Partial<User>): Promise<User | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        name: updates.name,
+        phone: updates.phone,
+        // Add other fields as necessary, ensuring they map to DB columns
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      name: data.name,
+      phone: data.phone,
+      score: data.score,
+      territoriesHeld: 0, // Should be re-fetched or kept from previous state if possible
+      joinedAt: new Date(data.joined_at).getTime(),
+      role: data.role,
+      teamId: data.team_id, // Ensure these allow null/undefined mapping correctly if changed
+    };
+  } catch (error) {
+    console.warn("Supabase unavailable. Updating local user.", error);
+
+    // Add to offline queue
+    saveToOfflineQueue({ type: 'update_user', payload: { userId, updates } });
+
+    // Local Fallback
+    const localUsers = getLocal('local_users') || [];
+    const index = localUsers.findIndex((u: any) => u.id === userId);
+
+    if (index !== -1) {
+      localUsers[index] = { ...localUsers[index], ...updates };
+      saveLocal('local_users', localUsers);
+      return localUsers[index];
+    }
+
+    // If not in local users but we are logged in (probably session storage), we might need to handle returning the merged object
+    // For now assuming it returns the updated object based on input for UI optimism
+    return { ...updates, id: userId } as User;
+  }
+};
+
 // --- TERRITORIES ---
 
 export const fetchAllTerritories = async (): Promise<Territory[]> => {

@@ -27,7 +27,7 @@ import { Coordinate, Territory, ActivityEvent, User, Team, Challenge, ActivityMo
 import { calculateTotalDistance, generateRandomColor, isValidGPSAccuracy, shouldAddPoint } from './utils/geoUtils';
 import { findOverlappingTerritories, validateConquest, calculateConquestBonus, getRequiredDistance } from './utils/territoryUtils';
 import { generateTerritoryInfo, generateRivalName } from './services/geminiService';
-import { getOrCreateUser, fetchAllTerritories, createTerritory, updateTerritoryOwner } from './services/gameService';
+import { getOrCreateUser, fetchAllTerritories, createTerritory, updateTerritoryOwner, updateUser } from './services/gameService';
 import { saveToOfflineQueue, processOfflineQueue } from './services/offlineService'; // Offline Service
 import { fetchSponsors } from './services/sponsorService'; // Sponsors
 import { addStars, STAR_REWARDS, isNightTime } from './utils/starSystem'; // Keep existing imports for now
@@ -255,6 +255,25 @@ export default function App() {
       setCurrentUser(null);
     }
   }
+
+  const handleUpdateProfile = async (name: string, phone: string): Promise<boolean> => {
+    if (!currentUser) return false;
+    try {
+      const updatedUser = await updateUser(currentUser.id, { name, phone });
+      if (updatedUser) {
+        // Preserve local session fields like teamId if not returned by update (though service tries to)
+        const mergedUser = { ...currentUser, ...updatedUser };
+        setCurrentUser(mergedUser);
+        localStorage.setItem('territory_user_session', JSON.stringify(mergedUser));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("Failed to update profile", e);
+      alert("Erro ao atualizar perfil.");
+      return false;
+    }
+  };
 
   // --- OFFLINE SYNC ---
   useEffect(() => {
@@ -908,6 +927,7 @@ export default function App() {
                 setShowCreateTeam(true);
               }
             }}
+            onUpdateProfile={handleUpdateProfile}
           />
         )
       }
