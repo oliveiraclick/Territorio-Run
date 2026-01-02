@@ -27,6 +27,7 @@ export interface Territory {
   activityMode?: ActivityMode; // Modalidade usada (corrida ou bike)
   avgSpeed?: number; // Velocidade média em km/h
   maxSpeed?: number; // Velocidade máxima em km/h
+  neighborhood?: string; // Bairro/Localidade real
 }
 
 export interface UserStats {
@@ -51,6 +52,7 @@ export interface User {
   role?: 'owner' | 'member' | 'individual'; // Papel do usuário
   companyName?: string; // Nome da Assessoria (se role = owner)
   cnpj?: string; // CNPJ da Assessoria (se role = owner)
+  neighborhood?: string; // Bairro do usuário
 }
 
 export interface ActivityEvent {

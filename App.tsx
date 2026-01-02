@@ -24,10 +24,10 @@ import { SplashScreen } from './components/UI/SplashScreen';
 import { AdminDashboard } from './components/Admin/AdminDashboard';
 import { AppShell } from './components/Layout/AppShell';
 import { Coordinate, Territory, ActivityEvent, User, Team, Challenge, ActivityMode, Sponsor } from './types';
-import { calculateTotalDistance, generateRandomColor, isValidGPSAccuracy, shouldAddPoint } from './utils/geoUtils';
+import { calculateTotalDistance, generateRandomColor, isValidGPSAccuracy, shouldAddPoint, getNeighborhood } from './utils/geoUtils';
 import { findOverlappingTerritories, validateConquest, calculateConquestBonus, getRequiredDistance } from './utils/territoryUtils';
 import { generateTerritoryInfo, generateRivalName } from './services/geminiService';
-import { getOrCreateUser, fetchAllTerritories, createTerritory, updateTerritoryOwner, updateUser } from './services/gameService';
+import { getOrCreateUser, fetchAllTerritories, createTerritory, updateTerritoryOwner, updateUser, fetchRecentActivity } from './services/gameService';
 import { saveToOfflineQueue, processOfflineQueue } from './services/offlineService'; // Offline Service
 import { fetchSponsors } from './services/sponsorService'; // Sponsors
 import { addStars, STAR_REWARDS, isNightTime } from './utils/starSystem'; // Keep existing imports for now
@@ -256,10 +256,10 @@ export default function App() {
     }
   }
 
-  const handleUpdateProfile = async (name: string, phone: string): Promise<boolean> => {
+  const handleUpdateProfile = async (name: string, phone: string, neighborhood?: string): Promise<boolean> => {
     if (!currentUser) return false;
     try {
-      const updatedUser = await updateUser(currentUser.id, { name, phone });
+      const updatedUser = await updateUser(currentUser.id, { name, phone, neighborhood });
       if (updatedUser) {
         // Preserve local session fields like teamId if not returned by update (though service tries to)
         const mergedUser = { ...currentUser, ...updatedUser };
@@ -281,6 +281,31 @@ export default function App() {
     processOfflineQueue();
     window.addEventListener('online', processOfflineQueue);
     return () => window.removeEventListener('online', processOfflineQueue);
+  }, []);
+
+  // --- GLOBAL ACTIVITY FEED ---
+  useEffect(() => {
+    const loadGlobalActivity = async () => {
+      const globalEvents = await fetchRecentActivity();
+      setEvents(prev => {
+        // Merge without duplicates (by timestamp + territoryId mostly likely unique enough, or message)
+        // Simple dedupe by message + timestamp
+        const newEvents = globalEvents.filter(ge =>
+          !prev.some(pe => pe.timestamp === ge.timestamp && pe.message === ge.message)
+        );
+
+        if (newEvents.length === 0) return prev;
+
+        // Combine and sort by timestamp desc
+        const combined = [...newEvents, ...prev].sort((a, b) => b.timestamp - a.timestamp).slice(0, 50); // Keep last 50
+        return combined;
+      });
+    };
+
+    // Load initially and then every 30s
+    loadGlobalActivity();
+    const interval = setInterval(loadGlobalActivity, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // --- GPS ---
@@ -595,6 +620,19 @@ export default function App() {
     // Verificar se é território de desafio
     const isChallenge = pendingChallenge !== null;
 
+    // Obter bairro (centroide aproximado - usando primeiro ponto por simplicidade e performance)
+    let neighborhood = 'Desconhecido';
+    if (currentPath.length > 0) {
+      const centerLat = currentPath[0].lat;
+      const centerLng = currentPath[0].lng;
+      try {
+        const detected = await getNeighborhood(centerLat, centerLng);
+        if (detected) neighborhood = detected;
+      } catch (err) {
+        console.warn("Could not detect neighborhood", err);
+      }
+    }
+
     const newTerritory: Territory = {
       id: tempId, name: finalName, coordinates: currentPath,
       ownerId: currentUser.id, ownerName: currentUser.name,
@@ -608,7 +646,8 @@ export default function App() {
       challengeId: undefined, // Será definido após criar o desafio
       activityMode: selectedActivityMode, // Salvar modalidade
       avgSpeed: currentAvgSpeed, // Salvar velocidade média
-      maxSpeed: currentMaxSpeed // Salvar velocidade máxima
+      maxSpeed: currentMaxSpeed, // Salvar velocidade máxima
+      neighborhood: neighborhood // Salvar bairro
     };
 
     setTerritories(prev => [...prev, newTerritory]);
@@ -948,6 +987,8 @@ export default function App() {
           <LeaderboardModal
             currentUser={currentUser}
             onClose={() => setShowLeaderboard(false)}
+            territories={territories}
+            userLocation={userLocation}
           />
         )
       }

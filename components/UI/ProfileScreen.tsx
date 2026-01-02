@@ -17,7 +17,7 @@ interface ProfileScreenProps {
     isStravaConnected?: boolean;
     onConnectStrava?: () => void;
     onSyncStrava?: () => void;
-    onUpdateProfile: (name: string, phone: string) => Promise<boolean>;
+    onUpdateProfile: (name: string, phone: string, neighborhood?: string) => Promise<boolean>;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
@@ -40,6 +40,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
     const [isEditing, setIsEditing] = React.useState(false);
     const [editName, setEditName] = React.useState(user.name);
     const [editPhone, setEditPhone] = React.useState(user.phone || '');
+    const [editNeighborhood, setEditNeighborhood] = React.useState(user.neighborhood || '');
     const [saving, setSaving] = React.useState(false);
 
     const handleAdminLogin = () => {
@@ -58,7 +59,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             return;
         }
         setSaving(true);
-        const success = await onUpdateProfile(editName, editPhone);
+        const success = await onUpdateProfile(editName, editPhone, editNeighborhood);
         setSaving(false);
         if (success) {
             setIsEditing(false);
@@ -133,6 +134,15 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                 className="w-full bg-black/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-gold-500 outline-none"
                             />
                         </div>
+                        <div>
+                            <label className="text-xs text-gray-400 font-bold uppercase">Bairro / Região</label>
+                            <input
+                                type="text"
+                                value={editNeighborhood}
+                                onChange={(e) => setEditNeighborhood(e.target.value)}
+                                className="w-full bg-black/50 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-gold-500 outline-none"
+                            />
+                        </div>
                         <div className="flex gap-2 pt-2">
                             <button
                                 onClick={() => setIsEditing(false)}
@@ -167,6 +177,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                                 }`}>
                                 {user.role === 'owner' ? '🏢 Assessoria / Dono' : user.teamId ? '🛡️ Membro de Equipe' : '🏃 Atleta Independente'}
                             </div>
+                            {user.neighborhood && (
+                                <div className="mt-1 flex items-center text-[10px] text-gray-500 font-mono uppercase tracking-wider">
+                                    <MapPin size={10} className="mr-1" />
+                                    {user.neighborhood}
+                                </div>
+                            )}
                         </div>
                     </>
                 )}

@@ -15,7 +15,7 @@ const getLocal = (key: string) => {
 
 // --- USERS ---
 
-export const getOrCreateUser = async (name: string, phone: string, password: string, role?: 'owner' | 'member' | 'individual', companyName?: string, cnpj?: string): Promise<User | null> => {
+export const getOrCreateUser = async (name: string, phone: string, password: string, role?: 'owner' | 'member' | 'individual', companyName?: string, cnpj?: string, neighborhood?: string): Promise<User | null> => {
   // Clean phone for consistency (remove spaces, dashes, parens)
   const cleanPhone = phone.replace(/\D/g, '');
 
@@ -54,7 +54,8 @@ export const getOrCreateUser = async (name: string, phone: string, password: str
         phone: existingUser.phone,
         score: existingUser.score,
         territoriesHeld: 0,
-        joinedAt: new Date(existingUser.joined_at).getTime()
+        joinedAt: new Date(existingUser.joined_at).getTime(),
+        neighborhood: existingUser.neighborhood
       };
     }
 
@@ -63,7 +64,7 @@ export const getOrCreateUser = async (name: string, phone: string, password: str
       console.log("Novo usuário. Criando conta protegida...");
       const { data: newUser, error: insertError } = await supabase
         .from('profiles')
-        .insert([{ name, phone: cleanPhone, score: 0, password: password, role, company_name: companyName, cnpj }])
+        .insert([{ name, phone: cleanPhone, score: 0, password: password, role, company_name: companyName, cnpj, neighborhood }])
         .select()
         .single();
 
@@ -75,7 +76,8 @@ export const getOrCreateUser = async (name: string, phone: string, password: str
         phone: newUser.phone,
         score: newUser.score,
         territoriesHeld: 0,
-        joinedAt: new Date(newUser.joined_at).getTime()
+        joinedAt: new Date(newUser.joined_at).getTime(),
+        neighborhood: newUser.neighborhood
       };
     }
 
@@ -139,7 +141,8 @@ export const fetchAllUsers = async (): Promise<User[]> => {
       phone: u.phone,
       score: u.score,
       territoriesHeld: 0, // We'll need to calculate this separately if needed, or join tables
-      joinedAt: new Date(u.joined_at).getTime()
+      joinedAt: new Date(u.joined_at).getTime(),
+      neighborhood: u.neighborhood
     }));
   } catch (error) {
     console.warn("Supabase unavailable. Fetching local users.");
@@ -155,6 +158,7 @@ export const updateUser = async (userId: string, updates: Partial<User>): Promis
       .update({
         name: updates.name,
         phone: updates.phone,
+        neighborhood: updates.neighborhood
         // Add other fields as necessary, ensuring they map to DB columns
       })
       .eq('id', userId)
@@ -172,6 +176,7 @@ export const updateUser = async (userId: string, updates: Partial<User>): Promis
       joinedAt: new Date(data.joined_at).getTime(),
       role: data.role,
       teamId: data.team_id, // Ensure these allow null/undefined mapping correctly if changed
+      neighborhood: data.neighborhood
     };
   } catch (error) {
     console.warn("Supabase unavailable. Updating local user.", error);
@@ -214,7 +219,11 @@ export const fetchAllTerritories = async (): Promise<Territory[]> => {
       color: t.color,
       value: t.value,
       conqueredAt: new Date(t.conquered_at).getTime(),
-      description: t.description
+      description: t.description,
+      neighborhood: t.neighborhood,
+      activityMode: t.activity_mode,
+      avgSpeed: t.avg_speed,
+      maxSpeed: t.max_speed
     }));
   } catch (error) {
     console.warn("Supabase unavailable. Fetching local territories.");
@@ -234,7 +243,11 @@ export const createTerritory = async (territory: Territory): Promise<boolean> =>
         owner_name: territory.ownerName,
         color: territory.color,
         value: territory.value,
-        conquered_at: new Date(territory.conqueredAt).toISOString()
+        conquered_at: new Date(territory.conqueredAt).toISOString(),
+        neighborhood: territory.neighborhood,
+        activity_mode: territory.activityMode,
+        avg_speed: territory.avgSpeed,
+        max_speed: territory.maxSpeed
       }]);
 
     if (error) throw error;
@@ -306,5 +319,30 @@ export const deleteTerritory = async (territoryId: string): Promise<boolean> => 
     current = current.filter((t: Territory) => t.id !== territoryId);
     saveLocal('local_territories', current);
     return true;
+  }
+};
+
+// --- ACTIVITY FEED ---
+
+export const fetchRecentActivity = async (limit = 10): Promise<any[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('territories')
+      .select('id, name, owner_name, conquered_at, neighborhood')
+      .order('conquered_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    return data.map((t: any) => ({
+      id: t.id, // Using territory ID as event ID valid enough for this stream or we generate a new one
+      type: 'conquer',
+      message: `${t.owner_name} conquistou ${t.name} ${t.neighborhood ? `(${t.neighborhood})` : ''}`,
+      timestamp: new Date(t.conquered_at).getTime(),
+      territoryId: t.id
+    }));
+  } catch (error) {
+    console.warn("Supabase unavailable. No global activity.", error);
+    return [];
   }
 };
