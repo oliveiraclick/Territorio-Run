@@ -40,6 +40,13 @@ export const AppShell: React.FC<AppShellProps> = ({
                     <span className="text-white font-black font-mono text-sm">{stars}</span>
                 </div>
 
+                {/* Role Badge (Center/Left) */}
+                {user?.role === 'owner' && (
+                    <div className="pointer-events-auto bg-gold-500/90 backdrop-blur-md border border-gold-400 rounded-full px-3 py-1.5 flex items-center shadow-lg animate-fade-in ml-2">
+                        <span className="text-black font-black text-[10px] tracking-widest uppercase">🏢 Assessoria</span>
+                    </div>
+                )}
+
                 {/* Right: Menu/Settings */}
                 <div className="pointer-events-auto flex items-center gap-2">
                     {navContent}

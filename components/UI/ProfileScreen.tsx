@@ -13,7 +13,6 @@ interface ProfileScreenProps {
     onAdminAccess: () => void;
     onTerritoryClick?: (territoryId: string) => void;
     onShowLeaderboard: () => void;
-    onShowLeaderboard: () => void;
     onViewTeam?: () => void;
     isStravaConnected?: boolean;
     onConnectStrava?: () => void;
@@ -84,11 +83,23 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                         </div>
                     </div>
 
-                    {/* Name & Level */}
-                    <h2 className="text-2xl font-black text-white mb-1">{user.name}</h2>
+                </div>
+
+                {/* Name & Role */}
+                <h2 className="text-2xl font-black text-white mb-1">{user.name}</h2>
+                <div className="flex flex-col items-center gap-1">
                     <div className="inline-flex items-center bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/30">
                         <Star size={12} className="mr-1 fill-gold-500 text-gold-500" />
                         <span className="text-gold-400 font-bold text-xs">Nível {level}</span>
+                    </div>
+                    {/* Role Tag */}
+                    <div className={`px-2 py-0.5 rounded-md border text-[9px] font-bold tracking-widest uppercase ${user.role === 'owner'
+                        ? 'bg-gold-500/20 border-gold-500/50 text-gold-400'
+                        : user.teamId
+                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+                            : 'bg-gray-500/20 border-gray-500/50 text-gray-400'
+                        }`}>
+                        {user.role === 'owner' ? '🏢 Assessoria / Dono' : user.teamId ? '🛡️ Membro de Equipe' : '🏃 Atleta Independente'}
                     </div>
                 </div>
 
